@@ -34,7 +34,7 @@
         rpy="0 0 1.57" />
       <geometry>
         <mesh
-          filename="package://your_package_name/meshes/base_link.STL" />
+          filename="package://task_one/meshes/base_link.STL" />
       </geometry>
     </visual>
     <collision>
@@ -72,12 +72,12 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://hola_bot/meshes/wheel.STL" />
+          filename="package://task_one/meshes/wheel.STL" />
       </geometry>
     </visual>
     <collision>
       <origin
-        xyz="0 -.01 0"
+        xyz="0 -0.01 0"
         rpy="1.57 0 0" />
       <geometry>
         <cylinder radius=".03" length="0.02"/>
@@ -129,12 +129,12 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://hola_bot/meshes/wheel.STL" />
+          filename="package://task_one/meshes/wheel.STL" />
       </geometry>
     </visual>
     <collision>
       <origin
-        xyz="0 -.01 0"
+        xyz="0 -0.01 0"
         rpy="1.57 0 0" />
       <geometry>
         <cylinder radius=".03" length="0.02"/>
@@ -149,7 +149,7 @@
     type="continuous"> <!--This means a revolute type of joint-->
     <origin
       xyz="-0.15154 -0.0872575 -0.0335"
-      rpy="0 0 0" />
+      rpy="0 0 -1.0467" />
     <parent
       link="base_link" />
     <child
@@ -186,12 +186,12 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://hola_bot/meshes/wheel.STL" />
+          filename="package://task_one/meshes/wheel.STL" />
       </geometry>
     </visual>
     <collision>
       <origin
-        xyz="0 -.01 0"
+        xyz="0 -0.01 0"
         rpy="1.57 0 0" />
       <geometry>
         <cylinder radius=".03" length="0.02"/>
@@ -206,7 +206,7 @@
     type="continuous"> <!--This means a revolute type of joint-->
     <origin
       xyz="0.15154 -0.0872575 -0.0335"
-      rpy="0 0 0" />
+      rpy="0 0 1.0467" />
     <parent
       link="base_link" />
     <child

@@ -6,8 +6,9 @@
         <arg name="gui" value="true"/>
         <arg name="recording" value="false"/>
         <arg name="debug" value="false"/>
+
     </include>
-    <node name="spawn_model"
+    <node name="hola_model"
     pkg="gazebo_ros"
     type="spawn_model"
     args="-file $(find task_one)/urdf/hola_bot.urdf -urdf -model hola_bot"
