@@ -1,6 +1,11 @@
 import queue
 import rospy
 
+# importing time to get input as an array and then execute each coordinates one by one
+import time
+
+# Adding Auto-Evaluator
+from geometry_msgs.msg import PoseArray
 # publishing to /cmd_vel with msg type: Twist
 from geometry_msgs.msg import Twist
 # subscribing to /odom with msg type: Odometry
@@ -8,14 +13,12 @@ from nav_msgs.msg import Odometry
 
 # for finding sin() cos() 
 import math
-
 # for array operations
 import numpy as np
 
 from std_msgs.msg import Float64MultiArray
 # Odometry is given as a quaternion, but for the controller we'll need to find the orientaion 0 by converting to euler angle
 from tf.transformations import euler_from_quaternion
-
 
 # Initializing the variables
 hola_x = 0
@@ -24,7 +27,8 @@ hola_theta = 0
 vel_x = 0
 vel_y = 0
 vel_z = 0
-
+Helper_time = 0
+index = 0		# this will help us determine what element are we currently on
 
 # Initialise variables that may be needed for the control loop
 # For ex: x_d, y_d, theta_d (in **meters** and **radians**) for defining desired goal-pose.
@@ -32,14 +36,35 @@ des_x = 0
 des_y = 0
 des_theta = 0
 
+# desired coordinates but in the form of the arrays
+x_goals = []
+y_goals = []
+theta_goals = []
 
 # and also Kp values for the P Controller
 kp_x = 1
 kp_y = 1
-kp_theta = 1 #initializing kp
+kp_theta = 10 #initializing kp
 
 #Taking input from the user for the desired co-ordinates
-des_x, des_y, des_theta = map(float, input("Specify your desired x and y coordinate and also specify the orientation:").split())
+# des_x, des_y, des_theta = map(float, input("Specify your desired x and y coordinate and also specify the orientation:").split())
+
+# Taking input from a topic known as auto-eval
+def task1_goals_Cb(msg):
+	global x_goals, y_goals, theta_goals
+
+	x_goals.clear()
+	y_goals.clear()
+	theta_goals.clear()
+
+	for waypoint_pose in msg.poses:
+		x_goals.append(waypoint_pose.position.x)
+		y_goals.append(waypoint_pose.position.y)
+
+		orientation_q = waypoint_pose.orientation
+		orientation_list = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
+		theta_goal = euler_from_quaternion (orientation_list)[2]
+		theta_goals.append(theta_goal)
 
 # Function to recieve values from the user
 def SetValue(msg):
@@ -57,13 +82,12 @@ def odometryCb(msg):
 		#the data recieved from the sensor in in quaternion form
 		orientation = [ msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w]
 		#So, we need to convert that data from quaternion to euler using an in-built function
-		roll, pitch, hola_theta = euler_from_quaternion(orientation)
-		hola_theta = round(hola_theta,2)
+		hola_theta = euler_from_quaternion(orientation)[2]
 
 	# Write your code to take the msg and update the three variables
 
 def main():
-		global pub, vel_x, vel_y,vel_z, kp_x, kp_y, kp_theta, rotation_matrix
+		global pub, vel_x, vel_y,vel_z, kp_x, kp_y, kp_theta, rotation_matrix, current_time, Helper_time, index, des_x, des_y, des_theta
 		# Initialze Node
 		# We'll leave this for you to figure out the syntax for 
 		# initialising node named "controller"
@@ -72,7 +96,6 @@ def main():
 		pub = rospy.Publisher("/cmd_vel", Twist, queue_size=100)
 		# We'll leave this for you to figure out the syntax for
 		# initialising publisher and subscriber of cmd_vel and odom respectively
-
 		# Declare a Twist message
 		vel = Twist()
 		# Initialise the required variables to 0
@@ -81,17 +104,45 @@ def main():
 		# For maintaining control loop rate.
 		rate = rospy.Rate(100)
 
+		x_goals = [1, -1, -1, 1, 0]
+		y_goals = [1, 1, -1, -1, 0]
+		theta_goals = [math.pi, 3*math.pi/4, -3*math.pi/4, -math.pi/4, 0]
 		#
 		# For tuning, accepting p_values from the message publisher 
-		rospy.Subscriber("P values: ", Float64MultiArray, SetValue)
+		rospy.Subscriber("P_val", Float64MultiArray, SetValue)
 		#
 		#
+		# declare that the node subscribes to task1_goals along with the other declarations of publishing and subscribing
+		rospy.Subscriber('task1_goals', PoseArray, task1_goals_Cb)		
+
+
 		while not rospy.is_shutdown():
 			rospy.Subscriber("/odom", Odometry, odometryCb)
+
+			# Getting time for the arrays
+			current_time = time.time()
+			sample_time = 1.5
 			# Find error (in x, y and 0) in global frame
 			# the /odom topic is giving pose of the robot in global frame
 			# the desired pose is declared above and defined by you in global frame
 			# therefore calculate error in global frame
+			
+			# Taking input for about 1s 
+			if (des_x - 0.01 <= hola_x <= 0.01 + des_x and des_y - 0.01 <= hola_y <= des_y + 0.01 and  des_theta - 0.005 <= hola_theta <= des_theta + 0.005):
+				if( current_time - Helper_time >= sample_time ):
+					if(index != 0):
+						des_x = x_goals[index]
+						des_y = y_goals[index]
+						des_theta = theta_goals[index]
+						index += 1
+					else:
+						des_x = x_goals[index]
+						des_y = y_goals[index]
+						des_theta = theta_goals[index]
+						index += 1
+			else:
+				Helper_time = current_time
+
 			err_x = des_x - hola_x
 			err_y = des_y - hola_y
 			err_z = 0
