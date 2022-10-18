@@ -43,8 +43,8 @@ y_goals = []
 theta_goals = []
 
 # and also Kp values for the P Controller
-kp_x = 3
-kp_y = 3
+kp_x = 2
+kp_y = 2
 kp_theta = 5 #initializing kp
 
 #Taking input from the user for the desired co-ordinates
@@ -122,7 +122,7 @@ def main():
 
 			# Getting time for the arrays
 			current_time = time.time()
-			sample_time = 1.5
+			sample_time = 2
 			# Find error (in x, y and 0) in global frame
 			# the /odom topic is giving pose of the robot in global frame
 			# the desired pose is declared above and defined by you in global frame
@@ -136,15 +136,11 @@ def main():
 						des_y = y_goals[index]
 						des_theta = theta_goals[index]
 						index += 1
-					elif(index == 0):
+					else:
 						des_x = x_goals[index]
 						des_y = y_goals[index]
 						des_theta = theta_goals[index]
 						index += 1
-					else:
-						vel_x = 0
-						vel_y = 0
-						vel_z = 0
 			else:
 				Helper_time = current_time
 
@@ -167,7 +163,7 @@ def main():
 			errors = np.array([[err_x],[err_y],[err_z]]) # errors in body frame
 			errors = np.matmul(rotation_matrix,errors) # errors in inertial frame
 			# For debugging
-			print("errors:",errors)
+			# print("errors:",errors)
 			# This is probably the crux of Task 1, figure this out and rest should be fine.
 
 			# Finally implement a P controller 

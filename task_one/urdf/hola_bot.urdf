@@ -148,8 +148,8 @@
     name="left_joint"
     type="continuous"> <!--This means a revolute type of joint-->
     <origin
-      xyz="-0.15154 -0.0872575 -0.0335"
-      rpy="0 0 -1.0467" />
+      xyz="-0.151407221 -0.087415 -0.0335"
+      rpy="3.14 0 -1.0467" />
     <parent
       link="base_link" />
     <child
@@ -205,8 +205,8 @@
     name="right_joint"
     type="continuous"> <!--This means a revolute type of joint-->
     <origin
-      xyz="0.15154 -0.0872575 -0.0335"
-      rpy="0 0 1.0467" />
+      xyz="0.151407221 -0.087415 -0.0335"
+      rpy="3.14 0 1.0467" />
     <parent
       link="base_link" />
     <child
