@@ -16,6 +16,7 @@ import math
 # for array operations
 import numpy as np
 
+# Getting the float64MultiArray for subscription
 from std_msgs.msg import Float64MultiArray
 # Odometry is given as a quaternion, but for the controller we'll need to find the orientaion 0 by converting to euler angle
 from tf.transformations import euler_from_quaternion
@@ -42,9 +43,9 @@ y_goals = []
 theta_goals = []
 
 # and also Kp values for the P Controller
-kp_x = 1
-kp_y = 1
-kp_theta = 10 #initializing kp
+kp_x = 3
+kp_y = 3
+kp_theta = 5 #initializing kp
 
 #Taking input from the user for the desired co-ordinates
 # des_x, des_y, des_theta = map(float, input("Specify your desired x and y coordinate and also specify the orientation:").split())
@@ -75,7 +76,7 @@ def SetValue(msg):
 
 # Subscriber for the current orientation and the position
 def odometryCb(msg):
-		global hola_x, hola_y, hola_theta, roll, pitch, orientation
+		global hola_x, hola_y, hola_theta, orientation
 
 		hola_x = round(msg.pose.pose.position.x,2)
 		hola_y = round(msg.pose.pose.position.y,2)
@@ -130,16 +131,20 @@ def main():
 			# Taking input for about 1s 
 			if (des_x - 0.01 <= hola_x <= 0.01 + des_x and des_y - 0.01 <= hola_y <= des_y + 0.01 and  des_theta - 0.005 <= hola_theta <= des_theta + 0.005):
 				if( current_time - Helper_time >= sample_time ):
-					if(index != 0):
+					if( 0 < index < len(x_goals)):
+						des_x = x_goals[index]
+						des_y = y_goals[index]
+						des_theta = theta_goals[index]
+						index += 1
+					elif(index == 0):
 						des_x = x_goals[index]
 						des_y = y_goals[index]
 						des_theta = theta_goals[index]
 						index += 1
 					else:
-						des_x = x_goals[index]
-						des_y = y_goals[index]
-						des_theta = theta_goals[index]
-						index += 1
+						vel_x = 0
+						vel_y = 0
+						vel_z = 0
 			else:
 				Helper_time = current_time
 
