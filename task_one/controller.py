@@ -56,9 +56,9 @@ kp_theta = 5 #initializing kp
 def task1_goals_Cb(msg):
 	global x_goals, y_goals, theta_goals
 
-	x_goals = [0,0,0,0,0]
-	y_goals = [0,0,0,0,0]
-	theta_goals = [0,0,0,0,0]
+	x_goals.clear()
+	y_goals.clear()
+	theta_goals.clear()
 
 	for waypoint_pose in msg.poses:
 		x_goals.append(waypoint_pose.position.x)
@@ -68,6 +68,11 @@ def task1_goals_Cb(msg):
 		orientation_list = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
 		theta_goal = euler_from_quaternion (orientation_list)[2]
 		theta_goals.append(theta_goal)
+	if(x_goals == [] or y_goals == [] or theta_goals==[]):
+		x_goals = [0,0,0,0,0]
+		y_goals = [0,0,0,0,0]
+		theta_goals = [0,0,0,0,0]
+
 
 # Function to recieve values from the user
 def SetValue(msg):
@@ -116,14 +121,14 @@ def main():
 		#
 		#
 		# # declare that the node subscribes to task1_goals along with the other declarations of publishing and subscribing
-		# rospy.Subscriber('task1_goals', PoseArray, task1_goals_Cb)		
+		# rospy.Subscriber('task1_goals', PoseArray, task1_goals_Cb)
+
+		rospy.Subscriber('task1_goals', PoseArray, task1_goals_Cb)			
 
 		# declare that the node subscribes to task1_goals along with the other declarations of publishing and subscribing
 
 		while not rospy.is_shutdown():
 			rospy.Subscriber("/odom", Odometry, odometryCb)	
-
-			rospy.Subscriber('task1_goals', PoseArray, task1_goals_Cb)	
 			# Getting time for the arrays
 			current_time = time.time()
 			sample_time = 2
