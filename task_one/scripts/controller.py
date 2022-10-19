@@ -1,6 +1,7 @@
 import queue
 import rospy
-
+import sys
+import traceback
 # importing time to get input as an array and then execute each coordinates one by one
 import time
 
@@ -92,7 +93,7 @@ def main():
 		# Initialze Node
 		# We'll leave this for you to figure out the syntax for 
 		# initialising node named "controller"
-		rospy.init_node('controller', anonymous=False)
+		rospy.init_node('controller_node', anonymous=False)
 		# Initialze Publisher and Subscriber
 		pub = rospy.Publisher("/cmd_vel", Twist, queue_size=100)
 		# We'll leave this for you to figure out the syntax for
@@ -136,11 +137,19 @@ def main():
 						des_y = y_goals[index]
 						des_theta = theta_goals[index]
 						index += 1
+						if(index>=len(x_goals)):
+							print("------------------------------------------")
+							print("          Python Script ended!!           ")
+							print("------------------------------------------")
 					else:
 						des_x = x_goals[index]
 						des_y = y_goals[index]
 						des_theta = theta_goals[index]
 						index += 1
+						if(index>=len(x_goals)):
+							print("------------------------------------------")
+							print("          Python Script ended!!           ")
+							print("------------------------------------------")
 			else:
 				Helper_time = current_time
 
@@ -183,10 +192,12 @@ def main():
 			pub.publish(vel)
 			rate.sleep()
 
-
-
 if __name__=='__main__':
+
 	try:
+		print("------------------------------------------")
+		print("         Python Script Started!!          ")
+		print("------------------------------------------")
 		main()
 	except rospy.ROSInterruptException:
 		pass
