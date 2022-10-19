@@ -68,7 +68,7 @@ def task1_goals_Cb(msg):
 		orientation_list = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
 		theta_goal = euler_from_quaternion (orientation_list)[2]
 		theta_goals.append(theta_goal)
-	if(x_goals == [] or y_goals == [] or theta_goals==[]):
+	if(x_goals == [] or y_goals == [] or theta_goals == []):
 		x_goals = [0,0,0,0,0]
 		y_goals = [0,0,0,0,0]
 		theta_goals = [0,0,0,0,0]
