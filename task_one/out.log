@@ -1,0 +1,17 @@
+#-----------> Test Case :  1
+[1mstarted roslaunch server http://proto1:37603/[0m
+
+SUMMARY
+========
+
+PARAMETERS
+ * /rosdistro: noetic
+ * /rosversion: 1.15.14
+
+NODES
+
+[1mROS_MASTER_URI=http://localhost:11311[0m
+Couldn't run your controller_node python script.
+ check name, path, executable permission and whether you have sourced 'catkin_ws/devel/setup.bash'
+[1m[controller_node_task1-1] process has died without exit code [pid -1, cmd /home/proto/catkin_ws/src/task_one/controller.py __name:=controller_node_task1 __log:=/home/proto/.ros/log/82e256c8-4f0b-11ed-8ace-619dd970777a/controller_node_task1-1.log].
+log file: /home/proto/.ros/log/82e256c8-4f0b-11ed-8ace-619dd970777a/controller_node_task1-1*.log[0m
