@@ -107,9 +107,9 @@ def main():
 		# For maintaining control loop rate.
 		rate = rospy.Rate(100)
 
-		x_goals = [1, -1, -1, 1, 0]
-		y_goals = [1, 1, -1, -1, 0]
-		theta_goals = [math.pi, 3*math.pi/4, -3*math.pi/4, -math.pi/4, 0]
+		# x_goals = [1, -1, -1, 1, 0]
+		# y_goals = [1, 1, -1, -1, 0]
+		# theta_goals = [math.pi, 3*math.pi/4, -3*math.pi/4, -math.pi/4, 0]
 		#
 		# For tuning, accepting p_values from the message publisher 
 		rospy.Subscriber("P_val", Float64MultiArray, SetValue)

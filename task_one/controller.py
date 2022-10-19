@@ -40,9 +40,9 @@ des_y = 0
 des_theta = 0
 
 # desired coordinates but in the form of the arrays
-x_goals = []
-y_goals = []
-theta_goals = []
+x_goals = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]
+y_goals = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]
+theta_goals = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]
 
 # and also Kp values for the P Controller
 kp_x = 2
@@ -56,9 +56,9 @@ kp_theta = 5 #initializing kp
 def task1_goals_Cb(msg):
 	global x_goals, y_goals, theta_goals
 
-	x_goals.clear()
-	y_goals.clear()
-	theta_goals.clear()
+	x_goals = [0,0,0,0,0]
+	y_goals = [0,0,0,0,0]
+	theta_goals = [0,0,0,0,0]
 
 	for waypoint_pose in msg.poses:
 		x_goals.append(waypoint_pose.position.x)
@@ -107,21 +107,24 @@ def main():
 		# For maintaining control loop rate.
 		rate = rospy.Rate(100)
 
-		x_goals = [1, -1, -1, 1, 0]
-		y_goals = [1, 1, -1, -1, 0]
-		theta_goals = [math.pi, 3*math.pi/4, -3*math.pi/4, -math.pi/4, 0]
+		# x_goals = [1, -1, -1, 1, 0]
+		# y_goals = [1, 1, -1, -1, 0]
+		# theta_goals = [math.pi, 3*math.pi/4, -3*math.pi/4, -math.pi/4, 0]
 		#
 		# For tuning, accepting p_values from the message publisher 
 		rospy.Subscriber("P_val", Float64MultiArray, SetValue)
 		#
 		#
-		# declare that the node subscribes to task1_goals along with the other declarations of publishing and subscribing
-		rospy.Subscriber('task1_goals', PoseArray, task1_goals_Cb)		
+		# # declare that the node subscribes to task1_goals along with the other declarations of publishing and subscribing
+		# rospy.Subscriber('task1_goals', PoseArray, task1_goals_Cb)		
 
+		# declare that the node subscribes to task1_goals along with the other declarations of publishing and subscribing
+		rospy.Subscriber('task1_goals', PoseArray, task1_goals_Cb)	
 
 		while not rospy.is_shutdown():
-			rospy.Subscriber("/odom", Odometry, odometryCb)
+			rospy.Subscriber("/odom", Odometry, odometryCb)	
 
+			
 			# Getting time for the arrays
 			current_time = time.time()
 			sample_time = 2
@@ -138,19 +141,14 @@ def main():
 						des_y = y_goals[index]
 						des_theta = theta_goals[index]
 						index += 1
-						if(index>=len(x_goals)):
-							print("------------------------------------------")
-							print("          Python Script ended!!           ")
-							print("------------------------------------------")
 					else:
 						des_x = x_goals[index]
 						des_y = y_goals[index]
 						des_theta = theta_goals[index]
+						if(index==len(x_goals)):
+							rospy.Subscriber('task1_goals', PoseArray, task1_goals_Cb)	
 						index += 1
-						if(index>=len(x_goals)):
-							print("------------------------------------------")
-							print("          Python Script ended!!           ")
-							print("------------------------------------------")
+
 			else:
 				Helper_time = current_time
 
