@@ -40,9 +40,9 @@ des_y = 0
 des_theta = 0
 
 # desired coordinates but in the form of the arrays
-x_goals = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]
-y_goals = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]
-theta_goals = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]
+x_goals = [0,0,0,0,0]
+y_goals = [0,0,0,0,0]
+theta_goals = [0,0,0,0,0]
 
 # and also Kp values for the P Controller
 kp_x = 2
@@ -119,12 +119,11 @@ def main():
 		# rospy.Subscriber('task1_goals', PoseArray, task1_goals_Cb)		
 
 		# declare that the node subscribes to task1_goals along with the other declarations of publishing and subscribing
-		rospy.Subscriber('task1_goals', PoseArray, task1_goals_Cb)	
 
 		while not rospy.is_shutdown():
 			rospy.Subscriber("/odom", Odometry, odometryCb)	
 
-			
+			rospy.Subscriber('task1_goals', PoseArray, task1_goals_Cb)	
 			# Getting time for the arrays
 			current_time = time.time()
 			sample_time = 2
@@ -142,12 +141,14 @@ def main():
 						des_theta = theta_goals[index]
 						index += 1
 					else:
-						des_x = x_goals[index]
-						des_y = y_goals[index]
-						des_theta = theta_goals[index]
 						if(index==len(x_goals)):
 							rospy.Subscriber('task1_goals', PoseArray, task1_goals_Cb)	
-						index += 1
+							index = 0
+						else:
+							des_x = x_goals[index]
+							des_y = y_goals[index]
+							des_theta = theta_goals[index]
+							index += 1
 
 			else:
 				Helper_time = current_time
