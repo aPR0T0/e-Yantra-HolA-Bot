@@ -47,12 +47,13 @@ kp_x = 2
 kp_y = 2
 kp_theta = 5 #initializing kp
 
+prev_x_goals, prev_y_goals, prev_theta_goals = [0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]
 #Taking input from the user for the desired co-ordinates
 # des_x, des_y, des_theta = map(float, input("Specify your desired x and y coordinate and also specify the orientation:").split())
 
 # Taking input from a topic known as auto-eval
 def task1_goals_Cb(msg):
-	global x_goals, y_goals, theta_goals
+	global x_goals, y_goals, theta_goals, prev_x_goals, prev_y_goals, prev_theta_goals
 
 	x_goals.clear()
 	y_goals.clear()
@@ -66,7 +67,8 @@ def task1_goals_Cb(msg):
 		orientation_list = [orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w]
 		theta_goal = euler_from_quaternion (orientation_list)[2]
 		theta_goals.append(theta_goal)
-	if(x_goals == [] or y_goals == [] or theta_goals == []):
+	print(x_goals, y_goals, theta_goals)
+	if(x_goals == [] and y_goals == [] and theta_goals == []):
 		x_goals     = [0,0,0,0,0]
 		y_goals     = [0,0,0,0,0]
 		theta_goals = [0,0,0,0,0]
@@ -107,6 +109,9 @@ def main():
 		# Initialise the required variables to 0
 		# <This is explained below>
 		
+		# x_goals = [1,-1,-1,1,0] 
+		# y_goals = [1,1,-1,-1,0]
+		# theta_goals = [0.785, 2.335, -2.335, -0.785, 0]
 		# For maintaining control loop rate.
 		rate = rospy.Rate(100)
 
@@ -120,13 +125,13 @@ def main():
 		#
 		# # declare that the node subscribes to task1_goals along with the other declarations of publishing and subscribing
 		# rospy.Subscriber('task1_goals', PoseArray, task1_goals_Cb)
-
-		rospy.Subscriber('task1_goals', PoseArray, task1_goals_Cb)			
+			
 		
 		# declare that the node subscribes to task1_goals along with the other declarations of publishing and subscribing
 
 		while not rospy.is_shutdown():
-			rospy.Subscriber("/odom", Odometry, odometryCb)	
+			rospy.Subscriber("/odom", Odometry, odometryCb)
+			rospy.Subscriber('task1_goals', PoseArray, task1_goals_Cb)	
 			# Getting time for the arrays
 			current_time = time.time()
 			sample_time  = 	   2
@@ -138,7 +143,7 @@ def main():
 			# Taking input for about 1s 
 			if (des_x - 0.01 <= hola_x <= 0.01 + des_x and des_y - 0.01 <= hola_y <= des_y + 0.01 and  des_theta - 0.005 <= hola_theta <= des_theta + 0.005):
 				if( current_time - Helper_time >= sample_time ):
-					if( 0 <= index < len(x_goals)):
+					if( 0 <= index < len(x_goals) and 0 <= index < len(y_goals) and 0 <= index < len(theta_goals)):
 						des_x = x_goals[index]
 						des_y = y_goals[index]
 						des_theta = theta_goals[index]
