@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 import queue
 import rospy
-import sys
-import traceback
 # importing time to get input as an array and then execute each coordinates one by one
 import time
 
@@ -40,8 +38,8 @@ des_y = 0
 des_theta = 0
 
 # desired coordinates but in the form of the arrays
-x_goals = [0,0,0,0,0]
-y_goals = [0,0,0,0,0]
+x_goals     = [0,0,0,0,0]
+y_goals     = [0,0,0,0,0]
 theta_goals = [0,0,0,0,0]
 
 # and also Kp values for the P Controller
@@ -69,10 +67,10 @@ def task1_goals_Cb(msg):
 		theta_goal = euler_from_quaternion (orientation_list)[2]
 		theta_goals.append(theta_goal)
 	if(x_goals == [] or y_goals == [] or theta_goals == []):
-		x_goals = [0,0,0,0,0]
-		y_goals = [0,0,0,0,0]
+		x_goals     = [0,0,0,0,0]
+		y_goals     = [0,0,0,0,0]
 		theta_goals = [0,0,0,0,0]
-
+		rospy.Subscriber('task1_goals', PoseArray, task1_goals_Cb)	
 
 # Function to recieve values from the user
 def SetValue(msg):
@@ -101,7 +99,7 @@ def main():
 		# initialising node named "controller"
 		rospy.init_node('controller_node', anonymous=False)
 		# Initialze Publisher and Subscriber
-		pub = rospy.Publisher("/cmd_vel", Twist, queue_size=100)
+		pub = rospy.Publisher("/cmd_vel", Twist, queue_size=100, latch=True)
 		# We'll leave this for you to figure out the syntax for
 		# initialising publisher and subscriber of cmd_vel and odom respectively
 		# Declare a Twist message
@@ -124,14 +122,14 @@ def main():
 		# rospy.Subscriber('task1_goals', PoseArray, task1_goals_Cb)
 
 		rospy.Subscriber('task1_goals', PoseArray, task1_goals_Cb)			
-
+		
 		# declare that the node subscribes to task1_goals along with the other declarations of publishing and subscribing
 
 		while not rospy.is_shutdown():
 			rospy.Subscriber("/odom", Odometry, odometryCb)	
 			# Getting time for the arrays
 			current_time = time.time()
-			sample_time = 2
+			sample_time  = 	   2
 			# Find error (in x, y and 0) in global frame
 			# the /odom topic is giving pose of the robot in global frame
 			# the desired pose is declared above and defined by you in global frame
@@ -140,21 +138,15 @@ def main():
 			# Taking input for about 1s 
 			if (des_x - 0.01 <= hola_x <= 0.01 + des_x and des_y - 0.01 <= hola_y <= des_y + 0.01 and  des_theta - 0.005 <= hola_theta <= des_theta + 0.005):
 				if( current_time - Helper_time >= sample_time ):
-					if( 0 < index < len(x_goals)):
+					if( 0 <= index < len(x_goals)):
 						des_x = x_goals[index]
 						des_y = y_goals[index]
 						des_theta = theta_goals[index]
 						index += 1
 					else:
-						if(index==len(x_goals)):
+						if(index == len(x_goals)):
 							rospy.Subscriber('task1_goals', PoseArray, task1_goals_Cb)	
 							index = 0
-						else:
-							des_x = x_goals[index]
-							des_y = y_goals[index]
-							des_theta = theta_goals[index]
-							index += 1
-
 			else:
 				Helper_time = current_time
 
