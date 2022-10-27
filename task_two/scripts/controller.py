@@ -58,7 +58,7 @@ front_wheel_pub = None
 # NOTE :  You may define multiple helper functions here and use in your code
 
 def signal_handler(sig, frame):
-	  
+	
 	# NOTE: This function is called when a program is terminated by "Ctr+C" i.e. SIGINT signal 	
 	print('Clean-up !')
 	cleanup()
@@ -97,7 +97,7 @@ def aruco_feedback_Cb(msg):
 	#	-> This feedback plays the same role as the 'Odometry' did in the previous task.
 
 	############################################
-
+   
 
 def inverse_kinematics():
 	############ ADD YOUR CODE HERE ############
@@ -108,7 +108,7 @@ def inverse_kinematics():
 	#	Publish the calculated efforts to actuate robot by applying force vectors on provided topics
 	############################################
 
-
+   
 def main():
 
 	rospy.init_node('controller_node')
