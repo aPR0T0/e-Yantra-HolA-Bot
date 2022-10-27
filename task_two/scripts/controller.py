@@ -149,17 +149,20 @@ def aruco_feedback_Cb(msg):
 	############################################
 	clear()# comment or remove this
 
-def inverse_kinematics():
+def inverse_kinematics(vel_x, vel_y, vel_z):
 	############ ADD YOUR CODE HERE ############
-
+	global constants_matrix
 	# INSTRUCTIONS & HELP : 
 	#	-> Use the target velocity you calculated for the robot in previous task, and
 	#	Process it further to find what proportions of that effort should be given to 3 individuals wheels !!
 	#	Publish the calculated efforts to actuate robot by applying force vectors on provided topics
 	############################################
-	clear()#comment or remove this
+	constants_matrix = np.array([[1,-0.5,-math.sqrt(3)/2],[0, -math.sqrt(3)/2, 0.5],[-1,-1,-1]])
+	given_goal_matrix = np.array([[vel_x], [vel_y], [vel_z]])
+	Force_matrix = np.linalg.solve(constants_matrix,given_goal_matrix)
+	return Force_matrix[0], Force_matrix[1], Force_matrix[2]
+	print(Force_matrix)
 
-   
 def main():
 	global right_wheel_pub, left_wheel_pub, front_wheel_pub, vel_x, vel_y, vel_z, kp_x, kp_y, kp_theta, current_time, Helper_time, index, des_x, des_y, des_theta, flag
 	global vel_1, vel_2, vel_3
@@ -213,7 +216,7 @@ def main():
 					index += 1
 					if(index == len(x_goals)):
 						if(index == 0):
-							rospy.Subscriber('task1_goals', PoseArray, task1_goals_Cb)
+							rospy.Subscriber('task2_goals', PoseArray, task2_goals_Cb)
 						else: 
 							index = 0
 							rospy.sleep(5)
