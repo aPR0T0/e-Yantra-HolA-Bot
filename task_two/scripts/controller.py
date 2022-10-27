@@ -160,8 +160,8 @@ def inverse_kinematics(vel_x, vel_y, vel_z):
 	constants_matrix = np.array([[1,-0.5,-math.sqrt(3)/2],[0, -math.sqrt(3)/2, 0.5],[-1,-1,-1]])
 	given_goal_matrix = np.array([[vel_x], [vel_y], [vel_z]])
 	Force_matrix = np.linalg.solve(constants_matrix,given_goal_matrix)
-	return Force_matrix[0], Force_matrix[1], Force_matrix[2]
 	print(Force_matrix)
+	return Force_matrix[0], Force_matrix[1], Force_matrix[2]
 
 def main():
 	global right_wheel_pub, left_wheel_pub, front_wheel_pub, vel_x, vel_y, vel_z, kp_x, kp_y, kp_theta, current_time, Helper_time, index, des_x, des_y, des_theta, flag
