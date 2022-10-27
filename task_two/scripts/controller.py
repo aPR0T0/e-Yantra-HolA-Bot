@@ -247,7 +247,7 @@ def main():
 		vel_y = kp_y*errors[1]
 		vel_z = kp_theta*err_theta
 
-		vel_1, vel_2, vel_3 = inverse_kinematics(vel_x, vel_y, vel_z)
+		vel_1.force.x, vel_2.force.x, vel_3.force.x = inverse_kinematics(vel_x, vel_y, vel_z)
 
 		front_wheel_pub.publish(vel_1)
 		right_wheel_pub.publish(vel_2)
