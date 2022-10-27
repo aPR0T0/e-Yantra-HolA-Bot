@@ -164,7 +164,8 @@ def inverse_kinematics(vel_x, vel_y, vel_z):
 	return Force_matrix[0], Force_matrix[1], Force_matrix[2]
 
 def main():
-	global right_wheel_pub, left_wheel_pub, front_wheel_pub, vel_x, vel_y, vel_z, kp_x, kp_y, kp_theta, current_time, Helper_time, index, des_x, des_y, des_theta, flag
+	global right_wheel_pub, left_wheel_pub, front_wheel_pub, vel_x, vel_y, vel_z
+	global kp_x, kp_y, kp_theta, current_time, Helper_time, index, des_x, des_y, des_theta, flag
 	global vel_1, vel_2, vel_3
 
 	vel_1, vel_2, vel_3 = Wrench(), Wrench(), Wrench()
