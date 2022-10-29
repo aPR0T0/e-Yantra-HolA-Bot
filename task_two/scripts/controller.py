@@ -157,17 +157,11 @@ def inverse_kinematics(vel_x, vel_y, vel_z):
 	#	Process it further to find what proportions of that effort should be given to 3 individuals wheels !!
 	#	Publish the calculated efforts to actuate robot by applying force vectors on provided topics
 	############################################
-<<<<<<< HEAD
-	
-	return vel_x, vel_y, vel_z
-	clear()#comment or remove this
-=======
 	constants_matrix = np.array([[1,-0.5,-math.sqrt(3)/2],[0, -math.sqrt(3)/2, 0.5],[-1,-1,-1]])
 	given_goal_matrix = np.array([[vel_x], [vel_y], [vel_z]])
 	Force_matrix = np.linalg.solve(constants_matrix,given_goal_matrix)
 	print(Force_matrix)
 	return Force_matrix[0], Force_matrix[1], Force_matrix[2]
->>>>>>> bb21a716ff29925e55735dac56bbee6fa5bdb053
 
 def main():
 	global right_wheel_pub, left_wheel_pub, front_wheel_pub, vel_x, vel_y, vel_z
