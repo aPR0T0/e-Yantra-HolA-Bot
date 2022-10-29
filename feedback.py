@@ -46,10 +46,10 @@ aruco_msg = Pose2D()
 
 def callback(data):
 	# Bridge is Used to Convert ROS Image message to OpenCV image
-	br = CvBridge()
+	br = CvBridge()						# To convert between ROS Image Messages and an Image for OpenCV
 	rospy.loginfo("receiving camera frame")
 	get_frame = br.imgmsg_to_cv2(data, "mono8")		# Receiving raw image in a "grayscale" format
-	current_frame = cv2.resize(get_frame, (500, 500), interpolation = cv2.INTER_LINEAR)
+	current_frame = cv2.resize(get_frame, (500, 500), interpolation = cv2.INTER_LINEAR)	#Resizing the CV Image Frame
 
 	############ ADD YOUR CODE HERE ############
 
@@ -63,27 +63,33 @@ def callback(data):
 
 	############################################
 
-        marker_size = 1
-        aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_250)
+        marker_size = 1					#Desribes the number of markers to be detected 
+        aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_250)		#To obtained a pre-defined dictionary of Aruco Markers
 	corners, ids, rejected = cv2.aruco.detectMarkers(current_frame, aruco_dict, camera_matrix, camera_distortion)
+	# corners = Stores the corners of the detected ArUCo marker.
+	# ids = Stores the IDs of the detected ArUCo marker.
+	# camera_matrix & camera_distortion = Associated with camera callibration, to be discussed.
 
-	if ids is not None:
-                aruco.drawDetectedMarkers(current_frame,corners) #Drawing a green outline arounded the detected marker.
+	if ids is not None:	# Check if the number of detected markers is non-zero
+                aruco.drawDetectedMarkers(current_frame,corners) #Draw a green outline arounded the detected marker.
                 rvec, tvec, _objPoints = cv2.aruco.estimatePoseSingleMarkers(corners, marker_size, camera_matrix, camera_distortion)
+		# Estimating the translational and rotational vectors for transformation between world frame and camera frame.
                 rvec_rev, tvec_rev = rvec * -1, tvec * -1
+		# Flipping the vectors since they provide transformation from world frame to camera frame, and we require the reverse.
                 rotation_matrix, jacobian = cv2.Rodrigues(rvec_rev)
-                rw_tvec = np.dot(rotation_matrix, tvec_rev)
-                roll, pitch, yaw = rotationMatrixToEulerAngles(rotation_matrix)
-                aruco_msg.x = rvec_rev[0]
-                aruco_msg.y = rvec_rev[1]
-                aruco_msg.theta = yaw
-                aruco_publisher.publish(aruco_msg)               
+		# Computing the rotational matrix
+                rw_tvec = np.dot(rotation_matrix, tvec_rev) # Computing the real world translational vector.
+                roll, pitch, yaw = rotationMatrixToEulerAngles(rotation_matrix) # Computing RPY
+                aruco_msg.x = rw_tvec[0]  #Translation in X
+                aruco_msg.y = rw_tvec[1]  #Translation in Y
+                aruco_msg.theta = yaw     #Rotation in Z
+                aruco_publisher.publish(aruco_msg)	#Publishing a Pose2D Message                
                 
 
 def main():
-	rospy.init_node('aruco_feedback_node')  
-	rospy.Subscriber('overhead_cam/image_raw', Image, callback)
-	rospy.spin()
+	rospy.init_node('aruco_feedback_node')				#Creating a node  
+	rospy.Subscriber('overhead_cam/image_raw', Image, callback)	#Subscribing to Overhead Camera Topic
+	rospy.spin()					
   
 if __name__ == '__main__':
   main()
