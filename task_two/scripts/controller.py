@@ -157,6 +157,8 @@ def inverse_kinematics():
 	#	Process it further to find what proportions of that effort should be given to 3 individuals wheels !!
 	#	Publish the calculated efforts to actuate robot by applying force vectors on provided topics
 	############################################
+	
+	return vel_x, vel_y, vel_z
 	clear()#comment or remove this
 
    
