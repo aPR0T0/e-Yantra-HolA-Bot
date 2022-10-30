@@ -35,12 +35,14 @@ from cv_bridge import CvBridge	# Package to convert between ROS and OpenCV Image
 import cv2				# OpenCV Library
 import cv2.aruco as aruco
 import math				# If you find it required
+from math import atan2
 from geometry_msgs.msg import Pose2D	# Required to publish ARUCO's detected position & orientation
 
 ############################ GLOBALS #############################
 
 aruco_publisher = rospy.Publisher('detected_aruco', Pose2D)
 aruco_msg = Pose2D()
+x1, y1, z1, x2, y2, z2, flag = 0,0,0,0,0,0,0
 
 ##################### FUNCTION DEFINITIONS #######################
 
@@ -70,9 +72,11 @@ def rotationMatrixToEulerAngles(R) :
 
 def callback(data):
 	# Bridge is Used to Convert ROS Image message to OpenCV image
+	global x1, y1, z1, x2, y2, z2, flag
 	br = CvBridge()						# To convert between ROS Image Messages and an Image for OpenCV
 	rospy.loginfo("receiving camera frame")
-	get_frame = br.imgmsg_to_cv2(data, "mono8")		# Receiving raw image in a "grayscale" format
+	get_frame = br.imgmsg_to_cv2(data, "bgr8")		# Receiving raw image in a "grayscale" format
+	get_frame = cv2.cvtColor(get_frame, cv2.COLOR_BGR2GRAY)
 	current_frame = cv2.resize(get_frame, (500, 500), interpolation = cv2.INTER_LINEAR)	#Resizing the CV Image Frame
 	print(get_frame)
 	############ ADD YOUR CODE HERE ############
@@ -88,31 +92,38 @@ def callback(data):
 	############################################
 	
 	marker_size = 1					#Desribes the number of markers to be detected 
-	aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_250)		#To obtained a pre-defined dictionary of Aruco Markers
+	aruco_dict = aruco.Dictionary_get(aruco.DICT_4X4_250)		#To obtained a pre-defined dictionary of Aruco Markers
 	arucoParams = aruco.DetectorParameters_create()
 	corners, ids, _= aruco.detectMarkers(current_frame, aruco_dict,parameters = arucoParams)
+	# print("ids",ids)
 	# corners = Stores the corners of the detected ArUCo marker.
 	# ids = Stores the IDs of the detected ArUCo marker.
 	# camera_matrix & camera_distortion = Associated with camera callibration, to be discussed.
 
 	if ids is not None:	# Check if the number of detected markers is non-zero
-		aruco.drawDetectedMarkers(current_frame,corners) #Draw a green outline arounded the detected marker.
-		arucoParams = aruco.DetectorParameters_create()
-		rotation_vector, tranlational_vector, _ = aruco.estimatePoseSingleMarkers(corners, marker_size,parameters = arucoParams)
-		# Estimating the translational and rotational vectors for transformation between world frame and camera frame.
-		rotation_vector_rev, translational_vector_rev = rotation_vector * -1, tranlational_vector * -1
-		# Flipping the vectors since they provide transformation from world frame to camera frame, and we require the reverse.
-		rotation_matrix, _ = cv2.Rodrigues(rotation_vector_rev)
-		# Computing the rotational matrix
-		inertial_translational_vector = np.dot(rotation_matrix, translational_vector_rev) # Computing the real world translational vector.
-		_,_, yaw = rotationMatrixToEulerAngles(rotation_matrix) # Computing RPY
-		aruco_msg.x = inertial_translational_vector[0]  #Translation in X
-		aruco_msg.y = inertial_translational_vector[1]  #Translation in Y
-		aruco_msg.theta = yaw     #Rotation in Z
+	# 	aruco.drawDetectedMarkers(current_frame,corners) #Draw a green outline arounded the detected marker.
+	# 	arucoParams = aruco.DetectorParameters_create()
+	# 	rotation_vector, tranlational_vector, _ = aruco.estimatePoseSingleMarkers(corners, marker_size,parameters = arucoParams)
+	# 	# Estimating the translational and rotational vectors for transformation between world frame and camera frame.
+	# 	rotation_vector_rev, translational_vector_rev = rotation_vector * -1, tranlational_vector * -1
+	# 	# Flipping the vectors since they provide transformation from world frame to camera frame, and we require the reverse.
+	# 	rotation_matrix, _ = cv2.Rodrigues(rotation_vector_rev)
+	# 	# Computing the rotational matrix
+	# 	inertial_translational_vector = np.dot(rotation_matrix, translational_vector_rev) # Computing the real world translational vector.
+	# 	_,_, yaw = rotationMatrixToEulerAngles(rotation_matrix) # Computing RPY
+		aruco_msg.x = ((corners[0][0][0][0] + corners[0][0][1][0] + corners[0][0][2][0] + corners[0][0][3][0])/4 - x1)#Translation in X
+		aruco_msg.y = ((corners[0][0][1][1] + corners[0][0][1][1] + corners[0][0][2][1] + corners[0][0][3][1])/4 - y1)  #Translation in Y
+		aruco_msg.theta = math.pi/4 - atan2((aruco_msg.y-y1),(aruco_msg.x - x1))     #Rotation in Z
 		aruco_publisher.publish(aruco_msg)	#Publishing a Pose2D Message  
-		aruco.drawDetectedMarkers(get_frame,corners)
-	cv2.imshow("output",get_frame)
-		
+		if (flag == 0):
+			x1 = aruco_msg.x
+			y1 = aruco_msg.y
+			flag += 1
+		print(aruco_msg)
+	aruco.drawDetectedMarkers(current_frame,corners)
+	cv2.imshow("output",current_frame)
+	print(current_frame.shape)
+	cv2.waitKey(3)
 
 def main():
 	rospy.init_node('aruco_feedback_node')				#Creating a node  
