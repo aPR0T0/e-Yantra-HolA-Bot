@@ -33,6 +33,7 @@ import rospy
 from sensor_msgs.msg import Image 	# Image is the message type for images in ROS
 from cv_bridge import CvBridge	# Package to convert between ROS and OpenCV Images
 import cv2				# OpenCV Library
+import cv2.aruco as aruco
 import math				# If you find it required
 from geometry_msgs.msg import Pose2D	# Required to publish ARUCO's detected position & orientation
 
@@ -73,7 +74,7 @@ def callback(data):
 	rospy.loginfo("receiving camera frame")
 	get_frame = br.imgmsg_to_cv2(data, "mono8")		# Receiving raw image in a "grayscale" format
 	current_frame = cv2.resize(get_frame, (500, 500), interpolation = cv2.INTER_LINEAR)	#Resizing the CV Image Frame
-
+	print(get_frame)
 	############ ADD YOUR CODE HERE ############
 
 	# INSTRUCTIONS & HELP : 
@@ -82,22 +83,22 @@ def callback(data):
 	#        but the code should be strictly written by your team and
 	#	   your code should take image & publish coordinates on the topics as specified only.  
 	#	-> Use basic high-school geometry of "TRAPEZOIDAL SHAPES" to find accurate marker coordinates & orientation :)
-	#	-> Observe the accuracy of aruco detection & handle every possible corner cases to get maximum scores !
+	#	-> Observe the accuracyaruco detection & handle every possible corner cases to get maximum scores !
 
 	############################################
 	
 	marker_size = 1					#Desribes the number of markers to be detected 
-	aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_6X6_250)		#To obtained a pre-defined dictionary of Aruco Markers
-	arucoParams = cv2.aruco.DetectorParameters_create()
-	corners, ids, _= cv2.aruco.detectMarkers(current_frame, aruco_dict,parameters = arucoParams)
+	aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_6X6_250)		#To obtained a pre-defined dictionary of Aruco Markers
+	arucoParams = aruco.DetectorParameters_create()
+	corners, ids, _= aruco.detectMarkers(current_frame, aruco_dict,parameters = arucoParams)
 	# corners = Stores the corners of the detected ArUCo marker.
 	# ids = Stores the IDs of the detected ArUCo marker.
 	# camera_matrix & camera_distortion = Associated with camera callibration, to be discussed.
 
 	if ids is not None:	# Check if the number of detected markers is non-zero
-		cv2.aruco.drawDetectedMarkers(current_frame,corners) #Draw a green outline arounded the detected marker.
-		arucoParams = cv2.aruco.DetectorParameters_create()
-		rotation_vector, tranlational_vector, _ = cv2.aruco.estimatePoseSingleMarkers(corners, marker_size,parameters = arucoParams)
+		aruco.drawDetectedMarkers(current_frame,corners) #Draw a green outline arounded the detected marker.
+		arucoParams = aruco.DetectorParameters_create()
+		rotation_vector, tranlational_vector, _ = aruco.estimatePoseSingleMarkers(corners, marker_size,parameters = arucoParams)
 		# Estimating the translational and rotational vectors for transformation between world frame and camera frame.
 		rotation_vector_rev, translational_vector_rev = rotation_vector * -1, tranlational_vector * -1
 		# Flipping the vectors since they provide transformation from world frame to camera frame, and we require the reverse.
@@ -108,7 +109,9 @@ def callback(data):
 		aruco_msg.x = inertial_translational_vector[0]  #Translation in X
 		aruco_msg.y = inertial_translational_vector[1]  #Translation in Y
 		aruco_msg.theta = yaw     #Rotation in Z
-		aruco_publisher.publish(aruco_msg)	#Publishing a Pose2D Message                
+		aruco_publisher.publish(aruco_msg)	#Publishing a Pose2D Message  
+		aruco.drawDetectedMarkers(get_frame,corners)
+	cv2.imshow("output",get_frame)
 		
 
 def main():
