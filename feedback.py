@@ -50,6 +50,8 @@ def callback(data):
 	rospy.loginfo("receiving camera frame")
 	get_frame = br.imgmsg_to_cv2(data, "mono8")		# Receiving raw image in a "grayscale" format
 	current_frame = cv2.resize(get_frame, (500, 500), interpolation = cv2.INTER_LINEAR)	#Resizing the CV Image Frame
+	camera_matrix = numpy.array([[1171.5121418959693, 0.0, 640.5],[0.0, 1171.5121418959693, 640.5],[0.0, 0.0, 1.0]])
+	camera_distortion = numpy.array([0.0, 0.0, 0.0, 0.0, 0.0])
 
 	############ ADD YOUR CODE HERE ############
 
