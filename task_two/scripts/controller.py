@@ -140,6 +140,7 @@ def task2_goals_Cb(msg):
 
 
 def aruco_feedback_Cb(msg):
+	global hola_x, hola_y, hola_theta
 	############ ADD YOUR CODE HERE ############
 
 	# INSTRUCTIONS & HELP : 
@@ -147,7 +148,10 @@ def aruco_feedback_Cb(msg):
 	#	-> This feedback plays the same role as the 'Odometry' did in the previous task.
 
 	############################################
-	clear()# comment or remove this
+	hola_x = msg.x
+	hola_y = msg.y
+	hola_theta = msg.theta
+	
 
 def inverse_kinematics(vel_x, vel_y, vel_z):
 	############ ADD YOUR CODE HERE ############
