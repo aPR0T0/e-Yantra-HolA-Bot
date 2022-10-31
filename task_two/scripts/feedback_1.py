@@ -115,7 +115,7 @@ def callback(data):
 # 	_,_, yaw = rotationMatrixToEulerAngles(rotation_matrix) # Computing RPY
 	aruco_msg.x = ((corners[0][0][0][0] + corners[0][0][1][0] + corners[0][0][2][0] + corners[0][0][3][0])/4 - x1)#Translation in X
 	aruco_msg.y = -((corners[0][0][0][1] + corners[0][0][1][1] + corners[0][0][2][1] + corners[0][0][3][1])/4 + y1)  #Translation in Y
-	aruco_msg.theta = math.pi/4-atan2((corners[0][0][1][1]-y1),(corners[0][0][1][0]-x1))     #Rotation in Z
+	aruco_msg.theta = atan2(-(corners[0][0][0][0]-corners[0][0][3][0]),-(corners[0][0][0][1]-corners[0][0][3][1]))     #Rotation in Z
 	aruco_publisher.publish(aruco_msg)	#Publishing a Pose2D Message  
 	if (flag == 0):
 		x1 = aruco_msg.x
