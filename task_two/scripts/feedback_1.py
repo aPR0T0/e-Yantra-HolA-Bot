@@ -76,7 +76,8 @@ def callback(data):
 	br = CvBridge()						# To convert between ROS Image Messages and an Image for OpenCV
 	rospy.loginfo("receiving camera frame")
 	get_frame = br.imgmsg_to_cv2(data, "bgr8")		# Receiving raw image in a "grayscale" format
-	get_frame = cv2.cvtColor(get_frame, cv2.COLOR_BGR2GRAY)
+	camera_matrix =  np.array([[1171.5121418959693, 0.0, 640.5],[0.0, 1171.5121418959693, 640.5],[0.0, 0.0, 1.0]])
+	# get_frame = cv2.cvtColor(get_frame, cv2.COLOR_BGR2GRAY)
 	current_frame = cv2.resize(get_frame, (500, 500), interpolation = cv2.INTER_LINEAR)	#Resizing the CV Image Frame
 	print(get_frame)
 	############ ADD YOUR CODE HERE ############
@@ -95,32 +96,40 @@ def callback(data):
 	aruco_dict = aruco.Dictionary_get(aruco.DICT_4X4_250)		#To obtained a pre-defined dictionary of Aruco Markers
 	arucoParams = aruco.DetectorParameters_create()
 	corners, ids, _= aruco.detectMarkers(current_frame, aruco_dict,parameters = arucoParams)
+	rvecs, tvecs, obj_points = cv2.aruco.estimatePoseSingleMarkers(corners,15,camera_matrix,np.array([0.0, 0.0, 0.0, 0.0, 0.0]))
 	# print("ids",ids)
 	# corners = Stores the corners of the detected ArUCo marker.
 	# ids = Stores the IDs of the detected ArUCo marker.
 	# camera_matrix & camera_distortion = Associated with camera callibration, to be discussed.
 
-	if ids is not None:	# Check if the number of detected markers is non-zero
-	# 	aruco.drawDetectedMarkers(current_frame,corners) #Draw a green outline arounded the detected marker.
-	# 	arucoParams = aruco.DetectorParameters_create()
-	# 	rotation_vector, tranlational_vector, _ = aruco.estimatePoseSingleMarkers(corners, marker_size,parameters = arucoParams)
-	# 	# Estimating the translational and rotational vectors for transformation between world frame and camera frame.
-	# 	rotation_vector_rev, translational_vector_rev = rotation_vector * -1, tranlational_vector * -1
-	# 	# Flipping the vectors since they provide transformation from world frame to camera frame, and we require the reverse.
-	# 	rotation_matrix, _ = cv2.Rodrigues(rotation_vector_rev)
-	# 	# Computing the rotational matrix
-	# 	inertial_translational_vector = np.dot(rotation_matrix, translational_vector_rev) # Computing the real world translational vector.
-	# 	_,_, yaw = rotationMatrixToEulerAngles(rotation_matrix) # Computing RPY
-		aruco_msg.x = ((corners[0][0][0][0] + corners[0][0][1][0] + corners[0][0][2][0] + corners[0][0][3][0])/4 - x1)#Translation in X
-		aruco_msg.y = ((corners[0][0][1][1] + corners[0][0][1][1] + corners[0][0][2][1] + corners[0][0][3][1])/4 - y1)  #Translation in Y
-		aruco_msg.theta = math.pi/4 - atan2((aruco_msg.y-y1),(aruco_msg.x - x1))     #Rotation in Z
-		aruco_publisher.publish(aruco_msg)	#Publishing a Pose2D Message  
-		if (flag == 0):
-			x1 = aruco_msg.x
-			y1 = aruco_msg.y
-			flag += 1
-		print(aruco_msg)
+	# if ids is not None:	# Check if the number of detected markers is non-zero
+# 	aruco.drawDetectedMarkers(current_frame,corners) #Draw a green outline arounded the detected marker.
+# 	arucoParams = aruco.DetectorParameters_create()
+# 	rotation_vector, tranlational_vector, _ = aruco.estimatePoseSingleMarkers(corners, marker_size,parameters = arucoParams)
+# 	# Estimating the translational and rotational vectors for transformation between world frame and camera frame.
+# 	rotation_vector_rev, translational_vector_rev = rotation_vector * -1, tranlational_vector * -1
+# 	# Flipping the vectors since they provide transformation from world frame to camera frame, and we require the reverse.
+# 	rotation_matrix, _ = cv2.Rodrigues(rotation_vector_rev)
+# 	# Computing the rotational matrix
+# 	inertial_translational_vector = np.dot(rotation_matrix, translational_vector_rev) # Computing the real world translational vector.
+# 	_,_, yaw = rotationMatrixToEulerAngles(rotation_matrix) # Computing RPY
+	aruco_msg.x = ((corners[0][0][0][0] + corners[0][0][1][0] + corners[0][0][2][0] + corners[0][0][3][0])/4 - x1)#Translation in X
+	aruco_msg.y = -((corners[0][0][0][1] + corners[0][0][1][1] + corners[0][0][2][1] + corners[0][0][3][1])/4 + y1)  #Translation in Y
+	aruco_msg.theta = math.pi/4-atan2((corners[0][0][1][1]-y1),(corners[0][0][1][0]-x1))     #Rotation in Z
+	aruco_publisher.publish(aruco_msg)	#Publishing a Pose2D Message  
+	if (flag == 0):
+		x1 = aruco_msg.x
+		y1 = aruco_msg.y
+		flag += 1
+	print(x1,y1)
+	print(aruco_msg)
 	aruco.drawDetectedMarkers(current_frame,corners)
+	for i in range(len(rvecs)):
+		rvec = rvecs[0][i]
+		tvec = tvecs[0][i]
+		cv2.drawFrameAxes(current_frame, camera_matrix, np.array([0.0, 0.0, 0.0, 0.0, 0.0]), rvec, tvec, 15 )
+	cv2.imshow("output", current_frame)
+	cv2.waitKey(3)
 	cv2.imshow("output",current_frame)
 	print(current_frame.shape)
 	cv2.waitKey(3)

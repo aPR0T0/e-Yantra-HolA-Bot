@@ -44,6 +44,28 @@ aruco_msg = Pose2D()
 ##################### FUNCTION DEFINITIONS #######################
 
 # NOTE :  You may define multiple helper functions here and use in your code
+def isRotationMatrix(R) :
+    Rt = numpy.transpose(R)
+    shouldBeIdentity = numpy.dot(Rt, R)
+    I = numpy.identity(3, dtype = R.dtype)
+    n = numpy.linalg.norm(I - shouldBeIdentity)
+    return n < 1e-6
+# Calculates rotation matrix to euler angles
+# The result is the same as MATLAB except the order
+# of the euler angles ( x and z are swapped ).
+def rotationMatrixToEulerAngles(R) :
+    assert(isRotationMatrix(R))
+    sy = math.sqrt(R[0,0] * R[0,0] +  R[1,0] * R[1,0])
+    singular = sy < 1e-6
+    if  not singular :
+        x = math.atan2(R[2,1] , R[2,2])
+        y = math.atan2(-R[2,0], sy)
+        z = math.atan2(R[1,0], R[0,0])
+    else :
+        x = math.atan2(-R[1,2], R[1,1])
+        y = math.atan2(-R[2,0], sy)
+        z = 0
+    return numpy.array([x, y, z])
 
 def callback(data):
     # Bridge is Used to Convert ROS Image message to OpenCV image
@@ -57,8 +79,19 @@ def callback(data):
     corners, ids, rejected = cv2.aruco.detectMarkers(current_frame, arucoDict,parameters=arucoParams)
     # print(corners, ids, rejected)
     rvecs, tvecs, obj_points = cv2.aruco.estimatePoseSingleMarkers(corners,15,camera_matrix,numpy.array([0.0, 0.0, 0.0, 0.0, 0.0]))
-    print(tvecs, rvecs)
-    
+    # print(tvecs, rvecs)
+
+# Flipping the vectors since they provide transformation from world frame to camera frame, and we require the reverse.
+    rotation_matrix, jacobian = cv2.Rodrigues(rvecs)
+# Computing the rotational matrix
+    rw_tvec = numpy.matmul(rotation_matrix, numpy.transpose(tvecs[0])) # Computing the real world translational vector.
+    roll, pitch, yaw = rotationMatrixToEulerAngles(rotation_matrix) # Computing RPY
+    aruco_msg.x = rw_tvec[0]  #Translation in X
+    aruco_msg.y = rw_tvec[1]  #Translation in Y
+    aruco_msg.theta = yaw     #Rotation in Z
+    print(aruco_msg)
+    aruco_publisher.publish(aruco_msg)	#Publishing a Pose2D Message     
+
     cv2.aruco.drawDetectedMarkers(current_frame,corners)
     for i in range(len(rvecs)):
         rvec = rvecs[0][i]
