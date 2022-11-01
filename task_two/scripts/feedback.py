@@ -78,8 +78,8 @@ def callback(data):
 	get_frame = br.imgmsg_to_cv2(data, "bgr8")		# Receiving raw image in a "grayscale" format
 	camera_matrix =  np.array([[1171.5121418959693, 0.0, 640.5],[0.0, 1171.5121418959693, 640.5],[0.0, 0.0, 1.0]])
 	# get_frame = cv2.cvtColor(get_frame, cv2.COLOR_BGR2GRAY)
-	current_frame = cv2.resize(get_frame, (500, 500), interpolation = cv2.INTER_LINEAR)	#Resizing the CV Image Frame
-	print(get_frame)
+	current_frame = cv2.resize(get_frame, (800, 800), interpolation = cv2.INTER_LINEAR)	#Resizing the CV Image Frame
+	# print(get_frame)
 	############ ADD YOUR CODE HERE ############
 
 	# INSTRUCTIONS & HELP : 
@@ -121,7 +121,7 @@ def callback(data):
 		x1 = aruco_msg.x
 		y1 = aruco_msg.y
 		flag += 1
-	print(x1,y1)
+	# print(x1,y1)
 	print(aruco_msg)
 	aruco.drawDetectedMarkers(current_frame,corners)
 	for i in range(len(rvecs)):
@@ -131,7 +131,7 @@ def callback(data):
 	cv2.imshow("output", current_frame)
 	cv2.waitKey(3)
 	cv2.imshow("output",current_frame)
-	print(current_frame.shape)
+	# print(current_frame.shape)
 	cv2.waitKey(3)
 
 def main():
