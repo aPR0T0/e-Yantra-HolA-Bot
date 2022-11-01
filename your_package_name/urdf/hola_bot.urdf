@@ -33,7 +33,7 @@
         rpy="0 0 1.57" />
       <geometry>
         <mesh
-          filename="package://task_two/meshes/base_link.obj" />
+          filename="package://your_package_name/meshes/base_link.obj" />
       </geometry>
     </visual>
     <collision>
@@ -72,7 +72,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://task_two/meshes/wheel.STL" />
+          filename="package://your_package_name/meshes/wheel.STL" />
       </geometry>
     </visual>
     <collision>
@@ -129,7 +129,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://task_two/meshes/wheel.STL" />
+          filename="package://your_package_name/meshes/wheel.STL" />
       </geometry>
       <material
         name="">
@@ -190,7 +190,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://task_two/meshes/wheel.STL" />
+          filename="package://your_package_name/meshes/wheel.STL" />
       </geometry>
       <material
         name="">
