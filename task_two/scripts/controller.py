@@ -182,9 +182,9 @@ def main():
 
 	# NOTE: You are strictly NOT-ALLOWED to use "cmd_vel" or "odom" topics in this task
 	#	Use the below given topics to generate motion for the robot.
-	right_wheel_pub = rospy.Publisher('/right_wheel_force', Wrench, queue_size=10)
-	front_wheel_pub = rospy.Publisher('/front_wheel_force', Wrench, queue_size=10)
-	left_wheel_pub = rospy.Publisher('/left_wheel_force', Wrench, queue_size=10)
+	right_wheel_pub = rospy.Publisher('/right_wheel_force', Wrench, queue_size=100)
+	front_wheel_pub = rospy.Publisher('/front_wheel_force', Wrench, queue_size=100)
+	left_wheel_pub = rospy.Publisher('/left_wheel_force', Wrench, queue_size=100)
 
 	rospy.Subscriber('detected_aruco',Pose2D,aruco_feedback_Cb)
 	rospy.Subscriber('task2_goals',PoseArray,task2_goals_Cb)
@@ -200,10 +200,10 @@ def main():
 	# 	-> In this task you have to further implement (Inverse Kinematics!)
 	#      find three omni-wheel velocities (v1, v2, v3) = left/right/center_wheel_force (assumption to simplify)
 	#      given velocity of the chassis (Vx, Vy, W)
-	#	   
-	x_goals = [50,350,50,250,250]
-	y_goals = [350,50,50,350,50]
-	theta_goals = [0, 0, 0, 0, 0]
+	# #	   
+	# x_goals = [50,350,50,250,250]
+	# y_goals = [350,50,50,350,50]
+	# theta_goals = [0, 0, 0, 0, 0]
 		
 	while not rospy.is_shutdown():
 		# Getting time for the arrays
