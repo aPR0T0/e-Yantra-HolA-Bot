@@ -77,9 +77,9 @@ des_y = 0
 des_theta = 0
 
 # and also Kp values for the P Controller
-kp_x = 10
-kp_y = 10
-kp_theta = 10 #initializing kp
+kp_x = 2
+kp_y = 2
+kp_theta = 5 #initializing kp
 
 errors = np.array([[0],[0],[0]])
 
@@ -201,9 +201,9 @@ def main():
 	#      find three omni-wheel velocities (v1, v2, v3) = left/right/center_wheel_force (assumption to simplify)
 	#      given velocity of the chassis (Vx, Vy, W)
 	#	   
-	x_goals = [50,350,50,250,250]
-	y_goals = [350,50,50,350,50]
-	theta_goals = [0, 0, 0, 0, 0]
+	# x_goals = [50,350,50,250,250]
+	# y_goals = [350,50,50,350,50]
+	# theta_goals = [0, 0, 0, 0, 0]
 		
 	while not rospy.is_shutdown():
 		# Getting time for the arrays
