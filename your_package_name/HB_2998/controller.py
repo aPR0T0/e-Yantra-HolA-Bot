@@ -77,9 +77,9 @@ des_y = 0
 des_theta = 0
 
 # and also Kp values for the P Controller
-kp_x = 10
-kp_y = 10
-kp_theta = 40 #initializing kp
+kp_x = 15
+kp_y = 15
+kp_theta = 100 #initializing kp
 
 errors = np.array([[0],[0],[0]])
 
@@ -217,7 +217,7 @@ def main():
 		# # Taking input for about 1s 
 		# rospy.Subscriber('task1_goals', PoseArray, task1_goals_Cb)
 		
-		if (des_x - 4 <= hola_x <= 4 + des_x and des_y - 4 <= hola_y <= des_y + 4 and  des_theta - 0.001 <= hola_theta <= des_theta + 0.001):
+		if (des_x - 4 <= hola_x <= 4 + des_x and des_y - 4 <= hola_y <= des_y + 4 and  des_theta - 0.005 <= hola_theta <= des_theta + 0.005):
 			if( current_time - Helper_time >= sample_time ):
 				if( 0 <= index < len(x_goals) and 0 <= index < len(y_goals) and 0 <= index < len(theta_goals)):
 					des_x = x_goals[index]
