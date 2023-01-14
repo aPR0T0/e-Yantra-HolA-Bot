@@ -4,16 +4,17 @@
 
 const int dirPinM1 = 8;  // dir pin for motor 1
 const int dirPinM2 = 12;
-const int dirPinM3 = 16;
+const int dirPinM3 = 9;
 const int stepPinM1 = 6; // Step pin for motor 1
 const int stepPinM2 = 10;
-const int stepPinM3 = 14;
+const int stepPinM3 = 7;
 const int stepsPerRevolution = 200;
 
 const int kp_x = 1;
 const int kp_y = 1;
 const int kp_z = 1;
 
+const int angular_velocity = 0.5 ;// rad/sec
 // We will be varying the delay to control the speed of the bot
 
 int x1, x2, x3; //These are the delay variables which will help us tweak delay for the speeds of the motors
@@ -178,7 +179,7 @@ void speed_publisher(int x1, int x2, int x3, int vel_1, int vel_2, int vel_3){
 // ######################################################################################################################### //
 // ##########################################      Main Function coming in      ############################################ //
 // ######################################################################################################################### //
-
+stepsPerRevolution
 
 void loop() {
   // put your main code here, to run repeatedly:
@@ -187,7 +188,7 @@ void loop() {
   // We will calculate the errors along them and then transform these vectors into individual velocities of the wheels
   float vel_x, vel_y, vel_z, vel_1, vel_2, vel_3;
 
-
+  
 
   // Now we need to publish all the velocties for the individual wheel with the help of the parameters
   speed_publisher(x1,x2,x3, vel_1, vel_2, vel_3);
