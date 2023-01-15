@@ -1,7 +1,7 @@
 const int dirPin_1 = 8;
 const int stepPin_1 = 6;
-const int dirPin_2 = 0;
-const int stepPin_2 = 0;
+const int dirPin_2 = 9;
+const int stepPin_2 = 7;
 const int dirPin_3 = 0;
 const int stepPin_3 = 0;
 const int stepsPerRevolution = 300;
