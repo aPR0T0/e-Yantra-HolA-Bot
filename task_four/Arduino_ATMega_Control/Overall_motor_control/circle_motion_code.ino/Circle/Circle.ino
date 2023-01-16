@@ -13,7 +13,8 @@ const int stepsPerRevolution = 200;
 const int kp_x = 1;
 const int kp_y = 1;
 const int kp_z = 1;
-
+unsigned long time;
+time = millis();         // this will give us the time elapsed since the 
 const int angular_velocity = 0.5 ;// rad/sec
 // We will be varying the delay to control the speed of the bot
 
