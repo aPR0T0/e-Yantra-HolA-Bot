@@ -1,6 +1,6 @@
 
 #include <math.h>
-
+#include <cmath.h>
 
 const int dirPinM1 = 8;  // dir pin for motor 1
 const int dirPinM2 = 12;
@@ -8,11 +8,17 @@ const int dirPinM3 = 9;
 const int stepPinM1 = 6; // Step pin for motor 1
 const int stepPinM2 = 10;
 const int stepPinM3 = 7;
+
+const int enablePinM1 = 11;
+const int enablePinM2 = 13;
+const int enablePinM3 = 15;
 const int stepsPerRevolution = 200;
 
 const int kp_x = 1;
 const int kp_y = 1;
 const int kp_z = 1;
+
+const int k = 1000; // Increase this only when u need a larger radius
 unsigned long time;
 time = millis();         // this will give us the time elapsed since the 
 const int angular_velocity = 0.5 ;// rad/sec
@@ -40,6 +46,10 @@ void setup() {
   
   pinMode(stepPinM3, OUTPUT);
   pinMode(dirPinM3 , OUTPUT);
+
+  pinMode(enablePinM1, OUTPUT);
+  pinMode(enablePinM2, OUTPUT);
+  pinMode(enablePinM3, OUTPUT);
 
 }
 
@@ -110,7 +120,7 @@ int findSolution(double coeff[3][4])
       }
     }
 
-    return ans;
+    return ans; // This will give the velocity in RPM
 }
 
 // ############################################################################################################## //
@@ -207,6 +217,14 @@ void loop() {
   // We will calculate the errors along them and then transform these vectors into individual velocities of the wheels
   float vel_x, vel_y, vel_z, vel_1, vel_2, vel_3;
 
+  vel_x = math::sin(angular_velocity*time*k); // equation for the circle
+  vel_y = math::cos(angular_velocity*time*k); // equation for the circle
+  vel_z = 0;                                  // equation for the circle
+
+  double coefficients[3][4] ;
+  coefficients[0] = {1,-0.5,-0.5, vel_x};
+  coefficients[1] = {0, -cmath::sqrt(3)/2, cmath::sqrt(3)/2, vel_y};
+  coefficients[2] = {-1,-1,-1, vel_z};
   
 
   // Now we need to publish all the velocties for the individual wheel with the help of the parameters

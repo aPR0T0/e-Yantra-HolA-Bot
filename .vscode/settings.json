@@ -12,5 +12,9 @@
         "/home/proto/omav_ws/devel/lib/python3/dist-packages",
         "/home/proto/copter/devel/lib/python3/dist-packages",
         "/opt/ros/noetic/lib/python3/dist-packages"
-    ]
+    ],
+    "files.associations": {
+        "cmath": "cpp",
+        "complex": "cpp"
+    }
 }
