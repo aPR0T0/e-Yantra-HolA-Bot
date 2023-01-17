@@ -125,9 +125,15 @@ void speed_publisher(int x1, int x2, int x3, int vel_1, int vel_2, int vel_3){
 
   if(vel_1 < 0){
     digitalWrite(dirPinM1, LOW);
+    if((-vel_1)< 450){           
+      x1 = 450;         // Max speed possibel is at th delay of 450
+    }
   }
   else{
     digitalWrite(stepPinM1, HIGH);
+    if(vel_1<450){
+      x1 = 450;
+    }
   }
   for(int x = 0; x < stepsPerRevolution; x++)
   {
@@ -142,9 +148,15 @@ void speed_publisher(int x1, int x2, int x3, int vel_1, int vel_2, int vel_3){
 
   if(vel_2 < 0){
     digitalWrite(dirPinM2, LOW);
+    if((-vel_2)<450){
+      x2 = 450;
+    }
   }
   else{
     digitalWrite(dirPinM2, HIGH);
+    if(vel_2<450){
+      x2 = 450;
+    }
   }
   for(int x = 0; x < stepsPerRevolution; x++)
   {
@@ -159,9 +171,15 @@ void speed_publisher(int x1, int x2, int x3, int vel_1, int vel_2, int vel_3){
   
   if(vel_3 < 0){
     digitalWrite(dirPinM3, LOW);
+    if(-vel_3<450){
+      x3 = 450;
+    }
   }
   else{
     digitalWrite(dirPinM3, HIGH);
+    if(vel_3<450){
+      x3 = 450;
+    }
   }
   for(int x = 0; x < stepsPerRevolution; x++)
   {
