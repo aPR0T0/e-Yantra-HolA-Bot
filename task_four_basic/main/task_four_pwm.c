@@ -30,20 +30,22 @@ void stepper_task(void *arg)
 		for(int i = 0 ; i < stepPerRevolution ; i++)
 		{
 			gpio_set_level(StepPin1, 1);
-			vTaskDelay(0.45 / portTICK_PERIOD_MS);
+			ets_delay_us(500);
 			gpio_set_level(StepPin1, 0);
-			vTaskDelay(0.45 / portTICK_PERIOD_MS);
+			ets_delay_us(500);
 		}
 
-		vTaskDelay(100 / portTICK_PERIOD_MS);
-		for(int i = 0; i< 10 ; i++){
-			gpio_set_level(StepPin1, 1);
-			vTaskDelay(100 / portTICK_PERIOD_MS);
-			gpio_set_level(enPin1, 1);
-			vTaskDelay(100 / portTICK_PERIOD_MS);
+		// ets_delay_us();
+		// for(int i = 0; i< 10 ; i++){
+		// 	gpio_set_level(StepPin1, 1);
+		// 	ets_delay_us(500);
+		// 	gpio_set_level(enPin1, 1);
+		// 	ets_delay_us(500);
 
-			gpio_set_level(enPin1, 0);
-		}
+		// 	gpio_set_level(enPin1, 0);
+		// 	ets_delay_us(500);
+		// }
+		// etsdelay
 
 		//ESP_LOGI("debug","left_duty_cycle:  %f    ::  right_duty_cycle :  %f  :: error :  %f  correction  :  %f  \n",left_duty_cycle, right_duty_cycle, error, correction);
 		ESP_LOGI("debug", "KP: %f ::  KI: %f  :: KD: %f :: Setpoint: %0.2f :: Roll: %0.2f | Pitch: %0.2f | PitchError: %0.2f", read_pid_const().kp, read_pid_const().ki, read_pid_const().kd, read_pid_const().setpoint, euler_angle[0], euler_angle[1], pitch_error);
