@@ -1,4 +1,4 @@
-3//Components
+//Components
 #include "sra_board.h"
 //#define debug
 
@@ -8,15 +8,15 @@
 
 static const gpio_num_t StepPin1 = GPIO_NUM_19;
 static const gpio_num_t dirPin1 = GPIO_NUM_18;
-static const gpio_num_t enPin1 = GPIO_NUM_5;   
+// static const gpio_num_t enPin1 = GPIO_NUM_5;   
 
-static const gpio_num_t StepPin2 = GPIO_NUM_32;
-static const gpio_num_t dirPin2 = GPIO_NUM_33;
-static const gpio_num_t enPin2 = GPIO_NUM_25;   
+// static const gpio_num_t StepPin2 = GPIO_NUM_32;
+// static const gpio_num_t dirPin2 = GPIO_NUM_33;
+// static const gpio_num_t enPin2 = GPIO_NUM_25;   
 
-static const gpio_num_t StepPin3 = GPIO_NUM_26;
-static const gpio_num_t dirPin3 = GPIO_NUM_27;
-static const gpio_num_t enPin3 = GPIO_NUM_14; 
+// static const gpio_num_t StepPin3 = GPIO_NUM_26;
+// static const gpio_num_t dirPin3 = GPIO_NUM_27;
+// static const gpio_num_t enPin3 = GPIO_NUM_14; 
 
 const int stepPerRevolution = 200;
 
@@ -48,7 +48,7 @@ void stepper_task(void *arg)
 		// etsdelay
 
 		//ESP_LOGI("debug","left_duty_cycle:  %f    ::  right_duty_cycle :  %f  :: error :  %f  correction  :  %f  \n",left_duty_cycle, right_duty_cycle, error, correction);
-		ESP_LOGI("debug", "KP: %f ::  KI: %f  :: KD: %f :: Setpoint: %0.2f :: Roll: %0.2f | Pitch: %0.2f | PitchError: %0.2f", read_pid_const().kp, read_pid_const().ki, read_pid_const().kd, read_pid_const().setpoint, euler_angle[0], euler_angle[1], pitch_error);
+		// ESP_LOGI("debug", "KP: %f ::  KI: %f  :: KD: %f :: Setpoint: %0.2f :: Roll: %0.2f | Pitch: %0.2f | PitchError: %0.2f", read_pid_const().kp, read_pid_const().ki, read_pid_const().kd, read_pid_const().setpoint, euler_angle[0], euler_angle[1], pitch_error);
 
 		vTaskDelay(1000 / portTICK_PERIOD_MS);
 		
