@@ -7,7 +7,7 @@
 
 // static const gpio_num_t StepPin1 = 19;
 // static const gpio_num_t dirPin1 = GPIO_NUM_18;
-// static const gpio_num_t enPin1 = GPIO_NUM_5;   
+// static const gpio_num_t enPin1 = GPIO_NUM_5;
 
 const int stepPerRevolution = 200;
 
@@ -15,8 +15,8 @@ const int stepPerRevolution = 200;
 void stepper_task(void *arg)
 {
 	gpio_config_t io_conf;
-    // bit mask for the pins, each bit maps to a GPIO
-    io_conf.pin_bit_mask = (1ULL<<19);
+    // bit mask for the pins, each bit maps to a GPIO//                                                                                                         motor 1               motor 2                 motor 3                                           
+    io_conf.pin_bit_mask = ((1ULL<<GPIO_NUM_27) | (1ULL<<GPIO_NUM_14) | (1ULL<<GPIO_NUM_32) | (1ULL<<GPIO_NUM_33) | (1ULL<<GPIO_NUM_16) | (1ULL<<GPIO_NUM_17) | (1ULL<<GPIO_NUM_4) | (1ULL<<GPIO_NUM_12) | (1ULL<<GPIO_NUM_25));
     // set gpio mode to input
     io_conf.mode = GPIO_MODE_OUTPUT;
 	// enable pull up resistors
@@ -40,33 +40,79 @@ void stepper_task(void *arg)
     }
 	while (1)
 	{
-
-		gpio_set_level((gpio_num_t)18,1);
+		gpio_set_level(GPIO_NUM_27,1);
+		gpio_set_level(GPIO_NUM_32,1);
+		gpio_set_level(GPIO_NUM_17, 1);
+		gpio_set_level(GPIO_NUM_4, 1);
+		for(int i= 0; i < 10; i++){
 		for(int i = 0 ; i < stepPerRevolution ; i++)
 		{
-			gpio_set_level((gpio_num_t)19, 1);
-			ets_delay_us(1000);
-			gpio_set_level((gpio_num_t)19, 0);
-			ets_delay_us(1000);
+			
+			gpio_set_level(GPIO_NUM_14, 1);
+			ets_delay_us(100/ portTICK_PERIOD_MS);
+			gpio_set_level(GPIO_NUM_33, 1);
+			// ets_delay_us(100/ portTICK_PERIOD_MS);
+			// gpio_set_level(GPIO_NUM_16, 1);
+			ets_delay_us(8500/ portTICK_PERIOD_MS);
+			gpio_set_level(GPIO_NUM_14, 0);
+			ets_delay_us(100/ portTICK_PERIOD_MS);
+			gpio_set_level(GPIO_NUM_33, 0);
+			// ets_delay_us(100/ portTICK_PERIOD_MS);
+			// gpio_set_level(GPIO_NUM_16, 0);
+			ets_delay_us(10000/ portTICK_PERIOD_MS);
+			printf("Hi\n");
 		}
-
-		vTaskDelay(1000 / portTICK_PERIOD_MS);
-
-		gpio_set_level((gpio_num_t)18,0);
+		}
+		printf("##############################################################################\n");
+		vTaskDelay(5000/portTICK_PERIOD_MS);
+		gpio_set_level(GPIO_NUM_27,1);
+		gpio_set_level(GPIO_NUM_32,0);
+		gpio_set_level(GPIO_NUM_17, 1);
+		gpio_set_level(GPIO_NUM_12, 1);
+		for(int i= 0; i < 10; i++){
 		for(int i = 0 ; i < stepPerRevolution ; i++)
 		{
-			gpio_set_level((gpio_num_t)19, 1);
-			ets_delay_us(1000);
-			gpio_set_level((gpio_num_t)19, 0);
-			ets_delay_us(1000);
-		}
-
-		vTaskDelay(1000 / portTICK_PERIOD_MS);
+			
+			// gpio_set_level(GPIO_NUM_14, 1);
+			// ets_delay_us(100/ portTICK_PERIOD_MS);
+			gpio_set_level(GPIO_NUM_33, 1);
+			ets_delay_us(100/ portTICK_PERIOD_MS);
+			gpio_set_level(GPIO_NUM_16, 1);
+			ets_delay_us(8500/ portTICK_PERIOD_MS);
+			// gpio_set_level(GPIO_NUM_14, 0);
+			// ets_delay_us(100/ portTICK_PERIOD_MS);
+			gpio_set_level(GPIO_NUM_33, 0);
+			ets_delay_us(100/ portTICK_PERIOD_MS);
+			gpio_set_level(GPIO_NUM_16, 0);
+			ets_delay_us(10000/ portTICK_PERIOD_MS);
+			printf("Firends ?\n");
+		}}
+		printf("##############################################################################\n");
+		vTaskDelay(5000/portTICK_PERIOD_MS);
+		gpio_set_level(GPIO_NUM_27,1);
+		gpio_set_level(GPIO_NUM_32,0);
+		gpio_set_level(GPIO_NUM_17, 1);
+		gpio_set_level(GPIO_NUM_25, 1);
+		for(int i= 0; i < 10; i++){
+		for(int i = 0 ; i < stepPerRevolution ; i++)
+		{
+			
+			gpio_set_level(GPIO_NUM_14, 1);
+			ets_delay_us(100/ portTICK_PERIOD_MS);
+			// gpio_set_level(GPIO_NUM_33, 1);
+			// ets_delay_us(100/ portTICK_PERIOD_MS);
+			gpio_set_level(GPIO_NUM_16, 1);
+			ets_delay_us(8500/ portTICK_PERIOD_MS);
+			gpio_set_level(GPIO_NUM_14, 0);
+			ets_delay_us(100/ portTICK_PERIOD_MS);
+			// gpio_set_level(GPIO_NUM_33, 0);
+			// ets_delay_us(100/ portTICK_PERIOD_MS);
+			gpio_set_level(GPIO_NUM_16, 0);
+			ets_delay_us(10000/ portTICK_PERIOD_MS);
+			printf("Bye\n");
+		}}
 		
 	}
-	
-	// Remove the task from the RTOS kernel management
-	vTaskDelete(NULL);
 }
 
 void app_main()
