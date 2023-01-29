@@ -1,8 +1,6 @@
-#include <cmath.h>
 #include "sra_board.h"
 //#define debug
 #include<time.h>
-
 // C Headers
 #include <stdio.h>
 #include <math.h>
@@ -16,15 +14,18 @@ const int kp_z = 1;
 
 const int angular_velocity = 0.5 ;// rad/sec
 const int k = 1; // Increase this only when u need a larger radius
-#define highest_delay = 80000;
-#define lowest_delay = 8500;
 
-#define highest_speed = 1000;
-#define lowest_speed = 0.1;
+#define highest_delay  80000
+#define lowest_delay  8500
+
+#define highest_speed  1000
+#define lowest_speed  0.1
 
 // We will be varying the delay to control the speed of the bot
 
 int x1, x2, x3; //These are the delay variables which will help us tweak delay for the speeds of the motors
+clock_t before;
+int count = 0;
 
 ///////////////////////////////////////////////////////////////////////
 /*
@@ -32,12 +33,13 @@ int x1, x2, x3; //These are the delay variables which will help us tweak delay f
   Arguments  ;    none
   Returns    :    current time
 */
-
-clock_t before = clock(); // Initialzing time
-
-clock_t timer(void *arg){
+clock_t timer(){
 
   // Time function initialization
+  if(count == 0){
+	before = clock();
+	count++;
+  }
   clock_t difference = clock() - before;
   return difference;
 
@@ -93,9 +95,9 @@ double determinantOfMatrix(double mat[3][3])
   type        :   double[][]
   Returns     :   a an array which represents a 3x1 matrix and all the elements in order
 */
-int findSolution(double coeff[3][4])
+double* findSolution(double coeff[3][4])
 {     
-    int ans[3];
+    double ans[3];
     // Matrix d using coeff as given in cramer's rule
     double d[3][3] = {
         { coeff[0][0], coeff[0][1], coeff[0][2] },
@@ -155,21 +157,18 @@ int findSolution(double coeff[3][4])
 
 // ################### Speed Publisher for all the motors according to the delays provided ###################### //
 
+
 /*
-
   Function    :   speed_publisher()
-
   Arguments   :   1. int x1 which are the delays
                   2. int x2 which are the delays
                   3. int x3 which are the delays
                   4. int vel_1 which is the velocity for the wheel 1
                   5. int vel_2 which is the velocity for the wheel 2
                   6. int vel_3 which is the velocity for the wheel 3
-
   Returns     :   Nothing - > void
 */
-
-void speed_publisher(int x1, int x2, int x3, int vel_1, int vel_2, int vel_3){
+void speed_publisher(int x1, int x2, int x3, int vel_1, int vel_2, int vel_3){	// Publishes Speed according to the given body frame velocities
 
   // Now we need to transform the velocity in rpm to the delay in microSec
   // Let's consider 10 rpm as the max speed and 0 rpm as the least speed
@@ -217,15 +216,10 @@ void speed_publisher(int x1, int x2, int x3, int vel_1, int vel_2, int vel_3){
 
   if(x1 < 8500){
     x1 = 8500;
-    gpio_set_level(GPIO_NUM_4, 0);
     
-  }
-  else if(x1 > 85000){
-    gpio_set_level(GPIO_NUM_4, 1); // Turning off the motor 1 as the delay is too high
   }
   if(x2 < 8500){
     x2 = 8500;
-    gpio_set_level(GPIO_NUM_12, 0);
   }
   else if(x2 > 85000){
     gpio_set_level(GPIO_NUM_12, 1); // Turning off the motor 2 as the delay is too high
@@ -243,12 +237,18 @@ void speed_publisher(int x1, int x2, int x3, int vel_1, int vel_2, int vel_3){
       gpio_set_level(GPIO_NUM_14, 1);
 			gpio_set_level(GPIO_NUM_16, 1);
 			ets_delay_us(8500 / portTICK_PERIOD_MS);
-      gpio_set_level(GPIO_NUM_33, 0);
-      ets_delay_us(x1 / portTICK_PERIOD_MS);
-      gpio_set_level(GPIO_NUM_16, 0);
-      ets_delay_us(x2 / portTICK_PERIOD_MS);
-      gpio_set_level(GPIO_NUM_14, 0);
-      ets_delay_us(x3 / portTICK_PERIOD_MS);
+      if(x1 > 85000){               // If this is not true then the motors will now be given any steps and hence they will stop
+        gpio_set_level(GPIO_NUM_33, 0);
+        ets_delay_us(x1 / portTICK_PERIOD_MS);
+      }
+      if(x2 > 85000){               // If this is not true then the motors will now be given any steps and hence they will stop
+        gpio_set_level(GPIO_NUM_14, 0);
+        ets_delay_us(x2 / portTICK_PERIOD_MS);
+      }   
+      if(x3 > 85000){               // If this is not true then the motors will now be given any steps and hence they will stop
+        gpio_set_level(GPIO_NUM_16, 0);
+        ets_delay_us(x1 / portTICK_PERIOD_MS);
+      }
   }
 
 }
@@ -261,67 +261,80 @@ void speed_publisher(int x1, int x2, int x3, int vel_1, int vel_2, int vel_3){
 // ##########################################      Main Function coming in      ############################################ //
 // ######################################################################################################################### //
 
-void stepper_task(){
+void stepper_task(void *arg){
 
-	gpio_config_t io_conf;
+		gpio_config_t io_conf;
     // bit mask for the pins, each bit maps to a GPIO
     // All pin defs according to each motor
-    io_conf.pin_bit_mask = (      (1ULL<<GPIO_NUM_27) | (1ULL<<GPIO_NUM_14) | (1ULL<<GPIO_NUM_32) \     
-                                | (1ULL<<GPIO_NUM_33) | (1ULL<<GPIO_NUM_16) | (1ULL<<GPIO_NUM_17) \
-                                | (1ULL<<GPIO_NUM_4) | (1ULL<<GPIO_NUM_12) | (1ULL<<GPIO_NUM_25));      
+    io_conf.pin_bit_mask = ((1ULL<<GPIO_NUM_27) | (1ULL<<GPIO_NUM_14) | (1ULL<<GPIO_NUM_32) | (1ULL<<GPIO_NUM_33) | (1ULL<<GPIO_NUM_16) | (1ULL<<GPIO_NUM_17));      
     // set gpio mode to input
-    io_conf.mode = GPIO_MODE_OUTPUT;
-	// enable pull up resistors
-    io_conf.pull_up_en = 0;
+    io_conf.mode  = GPIO_MODE_OUTPUT;
+	  // enable pull up resistors
+    io_conf.pull_up_en   = 0;
     // disable pull down resistors
     io_conf.pull_down_en = 1;
     // disable gpio interrupts
     io_conf.intr_type = GPIO_INTR_DISABLE;
+
+	esp_err_t err = gpio_config(&io_conf);
+	if (err == ESP_OK)
+    {
+        // ESP_LOGI(TAG_BAR_GRAPH, "enabled bar graph leds in mode: %d", enabled_bar_graph_flag);
+		printf("ohk!");
+    }
+    else
+    {
+        // ESP_LOGE(TAG_BAR_GRAPH, "error: %s", esp_err_to_name(err));
+        // enabled_bar_graph_flag = 0;
+		printf("error!");
+    }
   // put your main code here, to run repeatedly:
-  float err_x, err_y, err_theta;
-  // Now  to know the movements let me define the velocity vectors in x,y and angular velocity vector about z-axis
-  // We will calculate the errors along them and then transform these vectors into individual velocities of the wheels
-  float vel_x, vel_y, vel_z, vel_1, vel_2, vel_3;
-  double coefficients[3][4];  // The allocation matrix along with a column of the desired velcoties
-  double velocities[3];       // The final Velocity matrix after the allocation for each wheels
-  double rotation_matrix[3][3];
 
-  // Rotation matrix definition just for the next gen code
-  double rot_z;
-  double theta;
-  clock_t time_z;
+	// float err_x, err_y, err_theta;
 
-  rotation_matrix[0] = {  math::cos(rot_z) , math::sin(rot_z) , 0};
-  rotation_matrix[1] = { -math::sin(rot_z) , math::cos(rot_z) , 0};
-  rotation_matrix[2] = {         0         ,        0         , 1};
+	// Now  to know the movements let me define the velocity vectors in x,y and angular velocity vector about z-axis
+	// We will calculate the errors along them and then transform these vectors into individual velocities of the wheels
+	float vel_x, vel_y, vel_z, vel_1, vel_2, vel_3;
+	double coefficients[3][4];  // The allocation matrix along with a column of the desired velocities
+	double* velocities[3];       // The final Velocity matrix after the allocation for each wheels
+	double rotation_matrix[3][3];
 
-  while(1){
-      time_z = timer();
-      
-      theta = angular_velocity*time_z;
+	// Rotation matrix definition just for the next gen code
+	// double rot_z;
+	double theta;
+	clock_t time_z;
 
-      vel_x = k*math::sin(theta); // equation for the circle
-      vel_y = k*math::cos(theta); // equation for the circle
-      vel_z = 0;                  // equation for the circle i.e. no rotation
+	rotation_matrix[0] = {  math::cos(rot_z) , math::sin(rot_z) , 0};
+	rotation_matrix[1] = { -math::sin(rot_z) , math::cos(rot_z) , 0};
+	rotation_matrix[2] = {         0         ,        0         , 1};
 
-      coefficients[0] = {  1      ,       -0.5        ,     -0.5        , vel_x};
-      coefficients[1] = {  0      , -cmath::sqrt(3)/2 , cmath::sqrt(3)/2, vel_y};
-      coefficients[2] = { -1      ,       -1          ,      -1         , vel_z};
-      
-      
-      velocities[] = findSolution(coefficients);
+	while(1){
+		time_z = timer();
+		
+		theta = angular_velocity*time_z;
 
-      vel_1 = velocities[0];
-      vel_2 = velocities[1];
-      vel_3 = velocities[2];
+		vel_x = k*sin(theta); // equation for the circle
+		vel_y = k*cos(theta); // equation for the circle
+		vel_z = 0;                  // equation for the circle i.e. no rotation
 
-      // Now we need to publish all the velocties for the individual wheel with the help of the parameters
-      speed_publisher(x1,x2,x3, vel_1, vel_2, vel_3);
+		coefficients[0] = {  1      ,       -0.5        ,     -0.5         , vel_x};
+		coefficients[1] = {  0      , 	-sqrt(3)/2      ,    sqrt(3)/2     , vel_y};
+		coefficients[2] = { -1      ,       -1          ,      -1          , vel_z};
+		
+		
+		velocities = findSolution(coefficients);
+
+		vel_1 = velocities[0];
+		vel_2 = velocities[1];
+		vel_3 = velocities[2];
+
+		// Now we need to publish all the velocties for the individual wheel with the help of the parameters
+		speed_publisher( x1, x2, x3, vel_1, vel_2, vel_3);
 
 
-      // Just to avoid error
-      vTaskDelay(10/ portTICK_period_MS);
-  }
+		// Just to avoid error
+		vTaskDelay(10/ portTICK_period_MS);
+	}
   
 }
 void app_main()
