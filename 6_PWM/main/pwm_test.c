@@ -12,14 +12,14 @@ const int kp_y = 1;
 const int kp_z = 1;
 
 
-const int angular_velocity = 0.5 ;// rad/sec
-const int k = 1; // Increase this only when u need a larger radius
+const int angular_velocity = 20 ;// rad/sec
+const int k = 10; // Increase this only when u need a larger radius
 
-#define highest_delay  80000
-#define lowest_delay  8500
+#define highest_delay  10000
+#define lowest_delay  850
 
-#define highest_speed  1000
-#define lowest_speed  0.1
+#define highest_speed  10
+#define lowest_speed  0
 
 // We will be varying the delay to control the speed of the bot
 
@@ -97,7 +97,7 @@ double determinantOfMatrix(double mat[3][3])
 */
 double* findSolution(double coeff[3][4])
 {     
-    double ans[3];
+    double *ans = malloc(3*sizeof(double));
     // Matrix d using coeff as given in cramer's rule
     double d[3][3] = {
         { coeff[0][0], coeff[0][1], coeff[0][2] },
@@ -160,7 +160,7 @@ double* findSolution(double coeff[3][4])
 
 /*
   Function    :   speed_publisher()
-  Arguments   :   1. int x1 which are the delays
+  Arguments   :   1. int `x1` which are the delays
                   2. int x2 which are the delays
                   3. int x3 which are the delays
                   4. int vel_1 which is the velocity for the wheel 1
@@ -173,31 +173,43 @@ void speed_publisher(int x1, int x2, int x3, int vel_1, int vel_2, int vel_3){	/
   // Now we need to transform the velocity in rpm to the delay in microSec
   // Let's consider 10 rpm as the max speed and 0 rpm as the least speed
 
-  if(vel_1 > 1000){
-    vel_1 = 1000;
+  if(vel_1 > 0){
     gpio_set_level(GPIO_NUM_27 , 1); // anticlockwise direction
+    if(vel_1>10){
+      vel_1 = 10;
+    }
   }
-  else if( vel_1 < -1000){
-    vel_1 = -1000;
+  else if( vel_1 <= 0){
     gpio_set_level(GPIO_NUM_27 , 0); // clockwise direction
+    if(vel_1 < -10){
+      vel_1 = -10;
+    }
   }
 
-  if(vel_2 > 1000){
-    vel_2 = 1000;
+  if(vel_2 > 0){
     gpio_set_level(GPIO_NUM_32 , 1);
+    if(vel_2 > 10){
+      vel_2 = 10;
+    }
   }
-  else if(vel_2 < -1000){
-    vel_2 = -1000;
+  else if(vel_2 <= 0){
     gpio_set_level(GPIO_NUM_32 , 0);
+    if(vel_2 < -10){
+      vel_2 = -10;
+    }
   }
 
-  if(vel_3 > 1000){
-    vel_3 = 1000;
+  if(vel_3 > 0){
     gpio_set_level(GPIO_NUM_17 , 1);
+    if(vel_3 > 10){
+      vel_3 = 10;
+    }
   }
-  else if(vel_3 < -1000){
-    vel_3 = -1000;
+  else if(vel_3 <= 0){
     gpio_set_level(GPIO_NUM_17 , 0);
+    if(vel_3 < -10){
+      vel_3 = -10;
+    }
   }
 
   // Now, just mapping the velocities to the delays
@@ -214,40 +226,35 @@ void speed_publisher(int x1, int x2, int x3, int vel_1, int vel_2, int vel_3){	/
   x2 = highest_delay - x2;  // Inverting the delay because of the inverse relation of the speeds and the delays
   x3 = highest_delay - x3;  // Inverting the delay because of the inverse relation of the speeds and the delays  
 
-  if(x1 < 8500){
-    x1 = 8500;
+  if(x1 < 850){
+    x1 = 850;
     
   }
-  if(x2 < 8500){
-    x2 = 8500;
+  if(x2 < 850){
+    x2 = 850;
   }
-  else if(x2 > 85000){
-    gpio_set_level(GPIO_NUM_12, 1); // Turning off the motor 2 as the delay is too high
+  if(x3 < 850){
+    x3 = 850;
   }
-  if(x3 < 8500){
-    x3 = 8500;
-    gpio_set_level(GPIO_NUM_25, 0);
-  }
-  else if(x3 > 85000){
-    gpio_set_level(GPIO_NUM_25, 1); // Turning off the motor 3 as the delay is too high
-  }
+
+  printf("x1, x2, and x3 : %d %d %d\n", x1, x2, x3);
 
   for(int i = 0 ; i < stepsPerRevolution ; i++){
 			gpio_set_level(GPIO_NUM_33, 1);
       gpio_set_level(GPIO_NUM_14, 1);
 			gpio_set_level(GPIO_NUM_16, 1);
-			ets_delay_us(8500 / portTICK_PERIOD_MS);
-      if(x1 > 85000){               // If this is not true then the motors will now be given any steps and hence they will stop
+			ets_delay_us(850 / portTICK_PERIOD_MS);
+      if(x1 < 8500){               // If this is not true then the motors will now be given any steps and hence they will stop
         gpio_set_level(GPIO_NUM_33, 0);
         ets_delay_us(x1 / portTICK_PERIOD_MS);
       }
-      if(x2 > 85000){               // If this is not true then the motors will now be given any steps and hence they will stop
+      if(x2 < 8500){               // If this is not true then the motors will now be given any steps and hence they will stop
         gpio_set_level(GPIO_NUM_14, 0);
         ets_delay_us(x2 / portTICK_PERIOD_MS);
       }   
-      if(x3 > 85000){               // If this is not true then the motors will now be given any steps and hence they will stop
+      if(x3 < 8500){               // If this is not true then the motors will now be given any steps and hence they will stop
         gpio_set_level(GPIO_NUM_16, 0);
-        ets_delay_us(x1 / portTICK_PERIOD_MS);
+        ets_delay_us(x3 / portTICK_PERIOD_MS);
       }
   }
 
@@ -295,45 +302,50 @@ void stepper_task(void *arg){
 	// Now  to know the movements let me define the velocity vectors in x,y and angular velocity vector about z-axis
 	// We will calculate the errors along them and then transform these vectors into individual velocities of the wheels
 	float vel_x, vel_y, vel_z, vel_1, vel_2, vel_3;
-	double coefficients[3][4];  // The allocation matrix along with a column of the desired velocities
-	double* velocities[3];       // The final Velocity matrix after the allocation for each wheels
-	double rotation_matrix[3][3];
+	double *velocities;       // The final Velocity matrix after the allocation for each wheels
 
 	// Rotation matrix definition just for the next gen code
-	// double rot_z;
+	double rot_z = 0;
 	double theta;
 	clock_t time_z;
 
-	rotation_matrix[0] = {  math::cos(rot_z) , math::sin(rot_z) , 0};
-	rotation_matrix[1] = { -math::sin(rot_z) , math::cos(rot_z) , 0};
-	rotation_matrix[2] = {         0         ,        0         , 1};
+	double rotation_matrix[3][3] = {{     cos(rot_z)    ,    sin(rot_z)    , 0},\
+                                  {    -sin(rot_z)    ,    cos(rot_z)    , 0},\
+                                  {         0         ,        0         , 1}};
 
 	while(1){
 		time_z = timer();
-		
+    time_z = time_z / 1000;
+		printf(" some time: %ld\n",time_z);
 		theta = angular_velocity*time_z;
+    theta = theta*(3.14159265358979323846/180);
+    printf(" angle : %f \n", theta);
+    if(theta >= 6.28){
+      vTaskDelete(NULL);
+    }
 
 		vel_x = k*sin(theta); // equation for the circle
 		vel_y = k*cos(theta); // equation for the circle
 		vel_z = 0;                  // equation for the circle i.e. no rotation
 
-		coefficients[0] = {  1      ,       -0.5        ,     -0.5         , vel_x};
-		coefficients[1] = {  0      , 	-sqrt(3)/2      ,    sqrt(3)/2     , vel_y};
-		coefficients[2] = { -1      ,       -1          ,      -1          , vel_z};
-		
+		double coefficients[3][4] =  {{      1    ,       -0.5        ,     -0.5         , vel_x},\
+                                  {      0    , 	-sqrt(3)/2      ,    sqrt(3)/2     , vel_y},\
+                                  {    -1.0   ,       -1.0        ,     -1.0         , vel_z}};  // The allocation matrix along with a column of the desired velocities
 		
 		velocities = findSolution(coefficients);
 
 		vel_1 = velocities[0];
 		vel_2 = velocities[1];
 		vel_3 = velocities[2];
+    printf(" vel_x and vel_2  and vel_3: %f %f %f", vel_1, vel_2, vel_3);
+    free(velocities);
 
 		// Now we need to publish all the velocties for the individual wheel with the help of the parameters
 		speed_publisher( x1, x2, x3, vel_1, vel_2, vel_3);
 
 
 		// Just to avoid error
-		vTaskDelay(10/ portTICK_period_MS);
+		vTaskDelay(10/ portTICK_PERIOD_MS);
 	}
   
 }
