@@ -258,22 +258,22 @@ void speed_publisher(int x1, int x2, int x3, int vel_1, int vel_2, int vel_3){	/
   printf("x1 : %d x2 : %d and x3 : %d\n",x1, x2, x3);
   // printf("x1 : %lld x2 : %lld and x3 : %lld\n", (motor_one_curr_time- motor_one_prev_time), (motor_two_curr_time - motor_three_prev_time), (motor_three_curr_time - motor_three_prev_time));
 
-  gpio_set_level(GPIO_NUM_33, 1);
-  gpio_set_level(GPIO_NUM_14, 1);
-  gpio_set_level(GPIO_NUM_16, 1);
-  if((motor_one_curr_time - motor_one_prev_time) >= x1 && x1 < 2800){
-    gpio_set_level(GPIO_NUM_33, 0);
-    printf("motor_one_speed_published ");
+  gpio_set_level(GPIO_NUM_33, 0);
+  gpio_set_level(GPIO_NUM_14, 0);
+  gpio_set_level(GPIO_NUM_16, 0);
+  if((motor_one_curr_time - motor_one_prev_time) >= x1 && x1 < 2800){  // Instead of using for loop we are just checking if the time of the signal high is just enough so that steps are generated only in a given interval of time or delay
+    gpio_set_level(GPIO_NUM_33, 1);
+    // printf("motor_one_speed_published ");
     motor_one_prev_time = motor_one_curr_time;
   }
   if((motor_two_curr_time - motor_two_prev_time) >= x2 && x2 < 2800){
-    gpio_set_level(GPIO_NUM_14, 0);
-    printf("motor_two_speed_published ");
+    gpio_set_level(GPIO_NUM_14, 1);
+    // printf("motor_two_speed_published ");
     motor_two_prev_time = motor_two_curr_time;
   }
   if((motor_three_curr_time - motor_three_prev_time) >= x3 && x3 < 2800){
-    gpio_set_level(GPIO_NUM_16, 0);
-    printf("motor_three_speed_published\n");
+    gpio_set_level(GPIO_NUM_16, 1);
+    // printf("motor_three_speed_published\n");
     motor_three_prev_time = motor_three_curr_time;
   }
 }
@@ -319,9 +319,7 @@ void stepper_task(void *arg){
 
 	// Now  to know the movements let me define the velocity vectors in x,y and angular velocity vector about z-axis
 	// We will calculate the errors along them and then transform these vectors into individual velocities of the wheels
-	double vel_x, vel_y, vel_z, vel_1, vel_2, vel_3, pos_x, pos_y;
-  double prev_pos_x = 0, prev_pos_y = k,  prev_vel_x = 0, prev_vel_y = 0;
-  int64_t init_time, dTime;
+	double vel_x, vel_y, vel_z, vel_1, vel_2, vel_3;
 	double *velocities;       // The final Velocity matrix after the allocation for each wheels
 
 	// Rotation matrix definition just for the next gen code
@@ -336,11 +334,11 @@ void stepper_task(void *arg){
   motor_one_prev_time   = esp_timer_get_time();
   motor_two_prev_time   = esp_timer_get_time();
   motor_three_prev_time = esp_timer_get_time();
-  init_time = esp_timer_get_time();
+  
 	while(1){
 		time_z = timer();
     
-    time_t = time_z / 1000000;
+    time_t = time_z / 1000000; // As time was in microseconds
 		// printf(" some time: %ld\n",time_z);
 
 		theta = angular_velocity*time_t;
@@ -350,31 +348,9 @@ void stepper_task(void *arg){
     if(theta >= 6.28){
       vTaskDelete(NULL);
     }
-
-		pos_x = k*sin(theta); // equation for the circle
-		pos_y = k*cos(theta); // equation for the circle
+    vel_x = k*(angular_velocity)*sin(theta);  // v = r*Ω*sin(Θ) 
+    vel_y = k*(angular_velocity)*cos(theta);  // v = r*Ω*cos(Θ)
 		vel_z = 0;            // equation for the circle i.e. no rotation
-    // printf("%f posx and %f posy\n", pos_x, pos_y);
-    printf("%f pos1 and %f pos2: \n", pos_x - prev_pos_x, pos_y - prev_pos_y);
-    dTime = time_z - init_time;
-    dTime /= 1000;
-    init_time = time_z;
-
-    if(((pos_x - prev_pos_x)>=0.1 || (pos_x - prev_pos_x) <=-0.1) && ((pos_y - prev_pos_y)>=0.1 || (pos_y - prev_pos_y)<=-0.1)){
-      printf("hello");
-      vel_x = kp_x*((pos_x - prev_pos_x) / dTime); 
-      vel_y = kp_x*((pos_y - prev_pos_y) / dTime);
-      prev_vel_x = vel_x;
-      prev_vel_y = vel_y;
-    }
-
-    else{
-      vel_x = prev_vel_x;
-      vel_y = prev_vel_y;
-    }
-
-    prev_pos_x = pos_x;
-    prev_pos_y = pos_y;
 
 		double coefficients[3][4] =  {{      1    ,       -0.5        ,     -0.5         , vel_x  },\
                                   {      0    , 	-sqrt(3)/2      ,    sqrt(3)/2     , vel_y  },\
@@ -393,7 +369,7 @@ void stepper_task(void *arg){
 
 
 		// Just to avoid error
-		vTaskDelay(100 / portTICK_PERIOD_MS);
+		vTaskDelay(1 / portTICK_PERIOD_MS);
 	}
   
 }

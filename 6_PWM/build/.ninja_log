@@ -2485,3 +2485,17 @@
 1193	1277	1675176308447324478	.bin_timestamp	10b336fcdca3441b
 1277	1302	0	esp-idf/esptool_py/CMakeFiles/app_check_size	ef86f7bf599c26f1
 1302	6197	0	CMakeFiles/flash	449e21268d1f6a4e
+91	137	1674551765727994179	bootloader-prefix/src/bootloader-stamp/bootloader-build	82255a0216cc2406
+91	137	1674551765727994179	bootloader/bootloader.elf	82255a0216cc2406
+91	137	1674551765727994179	bootloader/bootloader.bin	82255a0216cc2406
+91	137	1674551765727994179	bootloader/bootloader.map	82255a0216cc2406
+12	67	1674551765727994179	bootloader-prefix/src/bootloader-stamp/bootloader-build	82255a0216cc2406
+12	67	1674551765727994179	bootloader/bootloader.elf	82255a0216cc2406
+12	67	1674551765727994179	bootloader/bootloader.bin	82255a0216cc2406
+12	67	1674551765727994179	bootloader/bootloader.map	82255a0216cc2406
+13	144	1675186560477490510	esp-idf/main/CMakeFiles/__idf_main.dir/pwm_test.c.obj	2063ff7a4cda9ddb
+144	160	1675186560493492317	esp-idf/main/libmain.a	fcf4c419775f8423
+160	924	1675186561241576804	esp-idf/esp_system/ld/sections.ld	943ced5355433ed5
+924	1250	1675186561581615211	pwm_test.elf	19d77bf464a1f16b
+1250	1337	1675186561669625153	.bin_timestamp	10b336fcdca3441b
+1337	1358	0	esp-idf/esptool_py/CMakeFiles/app_check_size	ef86f7bf599c26f1
