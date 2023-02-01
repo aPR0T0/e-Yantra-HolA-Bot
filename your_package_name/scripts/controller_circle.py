@@ -208,6 +208,7 @@ def main():
 	while not rospy.is_shutdown():
 		# Getting time for the arrays
 		current_time = time.time()
+
 		sample_time  = 	   2
 		# Find error (in x, y and 0) in global frame
 		# the /odom topic is giving pose of the robot in global frame
@@ -217,27 +218,27 @@ def main():
 		# # Taking input for about 1s 
 		# rospy.Subscriber('task1_goals', PoseArray, task1_goals_Cb)
 		
-		if (des_x - 4 <= hola_x <= 4 + des_x and des_y - 4 <= hola_y <= des_y + 4 and  des_theta - 0.005 <= hola_theta <= des_theta + 0.005):
-			if( current_time - Helper_time >= sample_time ):
-				if( 0 <= index < len(x_goals) and 0 <= index < len(y_goals) and 0 <= index < len(theta_goals)):
-					des_x = x_goals[index]
-					des_y = y_goals[index]
-					des_theta = theta_goals[index]
-					index += 1
-					if(index == len(x_goals)):
-						if(index == 0):
-							rospy.Subscriber('task2_goals', PoseArray, task2_goals_Cb)
-						else: 
-							index = 0
-							rospy.sleep(5)
-		else:
-			Helper_time = current_time
+		# if (des_x - 4 <= hola_x <= 4 + des_x and des_y - 4 <= hola_y <= des_y + 4 and  des_theta - 0.005 <= hola_theta <= des_theta + 0.005):
+		# 	if( current_time - Helper_time >= sample_time ):
+		# 		if( 0 <= index < len(x_goals) and 0 <= index < len(y_goals) and 0 <= index < len(theta_goals)):
+		# 			des_x = x_goals[index]
+		# 			des_y = y_goals[index]
+		# 			des_theta = theta_goals[index]
+		# 			index += 1
+		# 			if(index == len(x_goals)):
+		# 				if(index == 0):
+		# 					rospy.Subscriber('task2_goals', PoseArray, task2_goals_Cb)
+		# 				else: 
+		# 					index = 0
+		# 					rospy.sleep(5)
+		# else:
+		# 	Helper_time = current_time
 		
 
-		err_x = des_x - hola_x 
-		err_y = des_y - hola_y
-		err_z = 0
-		err_theta = des_theta - hola_theta
+		# err_x = des_x - hola_x 
+		# err_y = des_y - hola_y
+		# err_z = 0
+		# err_theta = des_theta - hola_theta
 
 		# Publishing errors in order to identify the problem by plotting on the rqt
 
@@ -253,9 +254,14 @@ def main():
 
 		# Finally implement a P controller 
 		# to react to the error with velocities in x, y and 0.
-		vel_x = kp_x*errors[0]
-		vel_y = kp_y*errors[1]
-		vel_z = kp_theta*err_theta
+		theta = current_time
+		theta = theta * (math.pi/180)
+
+		vel_x = 4*40*math.sin(40*theta)
+		vel_y = 4*40*math.cos(40*theta)
+		vel_z = 0
+		
+		# vel_z = kp_theta*err_theta
 	
 		vel_1.force.x, vel_2.force.x, vel_3.force.x = inverse_kinematics(vel_x, vel_y, vel_z)
 
