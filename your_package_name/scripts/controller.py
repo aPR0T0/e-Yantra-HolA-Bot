@@ -17,8 +17,8 @@
 *****************************************************************************************
 '''
 
-# Team ID:		[ Team-ID ]
-# Author List:		[ Names of team members worked on this file separated by Comma: Name1, Name2, ... ]
+# Team ID:		2998
+# Author List:		Alqama Shaikh, Sameer Gupta, and Khushi BaliaS
 # Filename:		feedback.py
 # Functions:
 #			[ Comma separated list of functions in this file ]

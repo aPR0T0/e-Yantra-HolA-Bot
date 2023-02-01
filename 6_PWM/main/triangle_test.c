@@ -43,7 +43,7 @@ void stepper_task(void *arg)
 		gpio_set_level(GPIO_NUM_27,1);
 		gpio_set_level(GPIO_NUM_32,0);
 		gpio_set_level(GPIO_NUM_17,0);
-		for(int t = 0;t<20; t++)
+		for(int t = 0;t<4; t++)
 		{
 			for(int i = 0 ; i < stepPerRevolution ; i++)
 			{
@@ -67,7 +67,7 @@ void stepper_task(void *arg)
 		gpio_set_level(GPIO_NUM_27,0);
 		gpio_set_level(GPIO_NUM_32,0);
 		gpio_set_level(GPIO_NUM_17,1);
-		for(int t=0;t<10;t++){
+		for(int t=0;t<4;t++){
 			for(int i = 0 ; i < stepPerRevolution ; i++)
 			{
 				
@@ -87,10 +87,10 @@ void stepper_task(void *arg)
 			}
 		}
 		vTaskDelay(100/portTICK_PERIOD_MS);
-		gpio_set_level(GPIO_NUM_27,1);
-		gpio_set_level(GPIO_NUM_32,0);
-		gpio_set_level(GPIO_NUM_17,0);
-		for(int t=0;t<10;t++){
+		gpio_set_level(GPIO_NUM_27,0);
+		gpio_set_level(GPIO_NUM_32,1);
+		gpio_set_level(GPIO_NUM_17,1);
+		for(int t=0;t<4;t++){
 			for(int i = 0 ; i < stepPerRevolution ; i++)
 			{
 				
