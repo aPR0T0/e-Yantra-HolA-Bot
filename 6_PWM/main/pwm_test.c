@@ -18,13 +18,13 @@ const int kp_y = 1;
 const int kp_z = 1;
 
 
-const int angular_velocity = 5; // rad/sec -> vel_x, vel_y = s/R
-const int k = 1; // Increase this only when u need a larger radius
+const float angular_velocity = 2; // rad/sec -> vel_x, vel_y = s/R
+const float radius = 0.5; // Increase this only when u need a larger radius
 
-#define highest_delay  500
-#define lowest_delay  9
+#define highest_delay  600
+#define lowest_frequency  20
 
-#define highest_speed  3.3
+#define highest_speed  0.67
 #define lowest_speed  0
 
 // STEP and DIRECTION output pins for stepper motor driver.
@@ -213,7 +213,6 @@ void speed_publisher(double x1, double x2, double x3, double vel_1, double vel_2
       vel_1 = -highest_speed;
     }
   }
-
   if(vel_2 > 0){
     gpio_set_level(GPIO_NUM_17 , 0);
     if(vel_2 > highest_speed){
@@ -245,31 +244,31 @@ void speed_publisher(double x1, double x2, double x3, double vel_1, double vel_2
   vel_2 = modulus(vel_2);   // Direction pins are already set 
   vel_3 = modulus(vel_3);   // Direction pins are already set 
   
-  x1 = map(vel_1,lowest_speed, highest_speed, lowest_delay, highest_delay);
-  x2 = map(vel_2,lowest_speed, highest_speed, lowest_delay, highest_delay);
-  x3 = map(vel_3,lowest_speed, highest_speed, lowest_delay, highest_delay);
+  x1 = map(vel_1,lowest_speed, highest_speed, lowest_frequency, highest_delay);
+  x2 = map(vel_2,lowest_speed, highest_speed, lowest_frequency, highest_delay);
+  x3 = map(vel_3,lowest_speed, highest_speed, lowest_frequency, highest_delay);
 
-  if(x1 < lowest_delay){
-    x1 = lowest_delay;
+  if(x1 < lowest_frequency){
+    x1 = lowest_frequency;
     
   }
-  if(x2 < lowest_delay){
-    x2 = lowest_delay;
+  if(x2 < lowest_frequency){
+    x2 = lowest_frequency;
   }
-  if(x3 < lowest_delay){
-    x3 = lowest_delay;
+  if(x3 < lowest_frequency){
+    x3 = lowest_frequency;
   }
 
   // printf("x1 : %f x2 : %f and x3 : %f \n",x1, x2, x3);
   // printf("x1 : %lld x2 : %lld and x3 : %lld\n", (motor_one_curr_time- motor_one_prev_time), (motor_two_curr_time - motor_three_prev_time), (motor_three_curr_time - motor_three_prev_time));
-  if(x1 >= 10){
+  if(x1 >= 20){
     ledc_set_freq(LEDC_HIGH_SPEED_MODE, LEDC_TIMER_0, abs(x1));
   }
-  if(x2 >= 10){
-  ledc_set_freq(LEDC_HIGH_SPEED_MODE, LEDC_TIMER_1, abs(x2));
+  if(x2 >= 20){
+    ledc_set_freq(LEDC_HIGH_SPEED_MODE, LEDC_TIMER_1, abs(x2));
   }
-  if(x3 >= 10){
-  ledc_set_freq(LEDC_HIGH_SPEED_MODE, LEDC_TIMER_2, abs(x3));
+  if(x3 >= 20){
+    ledc_set_freq(LEDC_HIGH_SPEED_MODE, LEDC_TIMER_2, abs(x3));
   }
 }
 
@@ -397,7 +396,7 @@ void stepper_task(void *arg){
 	// Rotation matrix definition just for the next gen code
 	double rot_z = 0;
 	double theta;
-	int64_t time_z, time_t;
+	double time_z, time_t;
 
 	double rotation_matrix[3][3] = {{     cos(rot_z)    ,    sin(rot_z)    , 0},\
                                   {    -sin(rot_z)    ,    cos(rot_z)    , 0},\
@@ -408,16 +407,17 @@ void stepper_task(void *arg){
 		time_z = timer();
     
     time_t = time_z / 1000000; // As time was in microseconds
-		// printf(" some time: %ld\n",time_z);
+		// printf(" some time: %f \n",time_t);
 
 		theta = angular_velocity*time_t;
     theta = theta*(3.14159265358979323846/180);
 
-    // if(theta >= 6.28){
-    //   vTaskDelete(NULL);
-    // }
-    vel_x = k*(angular_velocity)*cos(theta);  // v = r*Ω*sin(Θ) 
-    vel_y = k*(angular_velocity)*sin(theta);  // v = r*Ω*cos(Θ)
+    if(theta >= 6.28){
+      vTaskDelete(NULL);
+    }
+
+    vel_x = radius*(angular_velocity)*cos(theta);  // v = r*Ω*sin(Θ) 
+    vel_y = radius*(angular_velocity)*sin(theta);  // v = r*Ω*cos(Θ)
 		vel_z = 0;                                // equation for the circle i.e. no rotation
     // printf(" vel_x : %f vel_y : %f  \n", vel_x, vel_y);
 
@@ -441,5 +441,5 @@ void stepper_task(void *arg){
 void app_main()
 {
 	// xTaskCreate -> Create a new task and add it to the list of tasks that are ready to run
-	xTaskCreatePinnedToCore(&stepper_task, "stepper task", 8192, NULL, 1, NULL, taskCore);
+	xTaskCreatePinnedToCore(&stepper_task, "stepper task", 8192, NULL, 1, NULL, taskCore); // Running the task on CORE0 only of the esp32
 }
