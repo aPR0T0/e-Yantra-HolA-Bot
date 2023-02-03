@@ -416,37 +416,12 @@ void stepper_task(void *arg){
     time_t = 0;
       time_z = timer();
       time_t = time_z / 1000000; // As time was in microseconds
-
-      
-      vel_x = 0;  // v = r*Ω*sin(Θ) 
-      vel_y = 0;  // v = r*Ω*cos(Θ)
-      vel_z = 0;      
       if(time_t < 3){
         printf("loop1");
       // printf(" some time: %f \n",time_t);
       vel_x = 0.2;  // v = r*Ω*sin(Θ) 
       vel_y = 0;  // v = r*Ω*cos(Θ)
-      vel_z = 0;       
-
-      // Now we need to publish all the velocties for the individual wheel with the help of the parameters
-      }
-      else if(time_t < 6){
-        printf("loop2");
-      // printf(" some time: %f \n",time_t);
-      vel_x = -0.2;  // v = r*Ω*sin(Θ) 
-      vel_y = 0; // v = r*Ω*cos(Θ)
-      vel_z = 0;
-      }          
-      else if(time_t < 9){
-        vel_x = 0;
-        vel_y = 0.2;
-        vel_z = 0;
-      }     
-      else if(time_t < 12){
-        vel_x = 0;
-        vel_y = -0.2;
-        vel_z = 0;
-      }                // equation for the circle i.e. no rotation
+      vel_z = 0;                                // equation for the circle i.e. no rotation
       // printf(" vel_x : %f vel_y : %f  \n", vel_x, vel_y);
 
       double coefficients[3][4] =  {{     -1    ,       0.5        ,     0.5         , vel_x  },\
@@ -458,13 +433,40 @@ void stepper_task(void *arg){
       vel_1 = velocities[0];
       vel_2 = velocities[1];
       vel_3 = velocities[2];
-      speed_publisher( x1, x2, x3, vel_1, vel_2, vel_3);
       printf("vel_1: %f, vel_2: %f, and vel_3: %f \n", vel_1, vel_2, vel_3);
       free(velocities);
-      if(time_t >= 12){
-        ledc_stop(LEDC_HIGH_SPEED_MODE, LEDC_TIMER_0, 0);
+
+      // Now we need to publish all the velocties for the individual wheel with the help of the parameters
+      speed_publisher( x1, x2, x3, vel_1, vel_2, vel_3);
+      }
+      else if(time_t >= 3){
+        printf("loop2");
+      // printf(" some time: %f \n",time_t);
+      vel_x = 0;  // v = r*Ω*sin(Θ) 
+      vel_y = 0.2 ; // v = r*Ω*cos(Θ)
+      vel_z = 0;                                // equation for the circle i.e. no rotation
+      // printf(" vel_x : %f vel_y : %f  \n", vel_x, vel_y);
+
+      double coefficients[3][4] =  {{     -1    ,       0.5        ,     0.5         , vel_x  },\
+                                    {      0    , 	-sqrt(3)/2     ,   sqrt(3)/2     , vel_y  },\
+                                    {     1.0   ,       1.0        ,     1.0         , vel_z  }};  // The allocation matrix along with a column of the desired velocities
+      
+      velocities = findSolution(coefficients);
+
+      vel_1 = velocities[0];
+      vel_2 = velocities[1];
+      vel_3 = velocities[2];
+      printf("vel_1: %f, vel_2: %f, and vel_3: %f \n", vel_1, vel_2, vel_3);
+      free(velocities);
+
+      // Now we need to publish all the velocties for the individual wheel with the help of the parameters
+      speed_publisher( x1, x2, x3, vel_1, vel_2, vel_3);
+
+      }
+      if(time_t >= 6){
+        ledc_stop(LEDC_HIGH_SPEED_MODE, LEDC_TIMER_1, 0);
         ledc_stop(LEDC_HIGH_SPEED_MODE, LEDC_TIMER_1, 1);
-        ledc_stop(LEDC_HIGH_SPEED_MODE, LEDC_TIMER_2, 2);
+        ledc_stop(LEDC_HIGH_SPEED_MODE, LEDC_TIMER_1, 2);
         vTaskDelete(NULL);
       }
 	}

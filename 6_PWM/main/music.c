@@ -213,7 +213,7 @@ void stepper_task(void *arg){
     }
 
 		// Now we need to publish all the velocties for the individual wheel with the help of the parameters
-		speed_publisher( x1, x2, x3, vel_1, vel_2, vel_3);
+		// speed_publisher( x1, x2, x3, vel_1, vel_2, vel_3);
 	}
   
 }
