@@ -18,11 +18,11 @@ const int kp_y = 1;
 const int kp_z = 1;
 
 
-const float angular_velocity = 0.6; // rad/sec -> vel_x, vel_y = s/R
-const float radius = 0.3; // Increase this only when u need a larger radius
+const float angular_velocity = 0.26; // rad/sec -> vel_x, vel_y = s/R
+const float radius = 0.8; // Increase this only when u need a larger radius
 
-#define highest_frequency  600
-#define lowest_frequency  18
+#define highest_delay  20000
+#define lowest_delay  850
 
 #define highest_speed  0.67
 #define lowest_speed  0
@@ -37,14 +37,16 @@ static const gpio_num_t dire_pin_m2 = GPIO_NUM_27;
 static const gpio_num_t step_pin_m3 = GPIO_NUM_16;
 static const gpio_num_t dire_pin_m3 = GPIO_NUM_17;
 
-int32_t accel_limit = 0; // Hz. Speed change per update will not exceed this amount
-int32_t speed_current = 0;  // Speed within acceleration limites sent to PWM.
-// We will be varying the delay to control the speed of the bot
+float_t m1_timer_curr, m2_timer_curr, m3_timer_curr;
+float_t m1_timer_prev, m2_timer_prev, m3_timer_prev;
 
 double x1, x2, x3; //These are the delay variables which will help us tweak delay for the speeds of the motors
 int64_t before;
 int count = 0;
 int count_2 = 0; // Used to assist the step cycle
+int m1_count = 0;
+int m2_count = 0;
+int m3_count = 0;
 
 ///////////////////////////////////////////////////////////////////////
 /*
@@ -201,41 +203,27 @@ void speed_publisher(double x1, double x2, double x3, double vel_1, double vel_2
 
   // Now we need to transform the velocity in rpm to the delay in microSec
 
+  m1_timer_curr = timer();
+  m2_timer_curr = timer();
+  m3_timer_curr = timer();
+
   if(vel_1 > 0){
-    gpio_set_level(GPIO_NUM_32 , 0); // clockwise direction 
-    if(vel_1 > highest_speed){
-      vel_1 = highest_speed;
-    }
+    gpio_set_level(GPIO_NUM_32 , 1); // clockwise direction 
   }
   else if( vel_1 <= 0){
-    gpio_set_level(GPIO_NUM_32 , 1); // anticlockwise direction
-    if(vel_1 < -highest_speed){
-      vel_1 = -highest_speed;
-    }
+    gpio_set_level(GPIO_NUM_32 , 0); // anticlockwise direction
   }
   if(vel_2 > 0){
-    gpio_set_level(GPIO_NUM_17 , 0);
-    if(vel_2 > highest_speed){
-      vel_2 = highest_speed;
-    }
+    gpio_set_level(GPIO_NUM_17 , 1);
   }
   else if(vel_2 <= 0){
-    gpio_set_level(GPIO_NUM_17 , 1);
-    if(vel_2 < -highest_speed){
-      vel_2 = -highest_speed;
-    }
+    gpio_set_level(GPIO_NUM_17 , 0);
   }
   if(vel_3 > 0){
-    gpio_set_level(GPIO_NUM_27 , 0);
-    if(vel_3 > highest_speed){
-      vel_3 = highest_speed;
-    }
+    gpio_set_level(GPIO_NUM_27 , 1);
   }
   else if(vel_3 <= 0){
-    gpio_set_level(GPIO_NUM_27 , 1);
-    if(vel_3 < -highest_speed){
-      vel_3 = -highest_speed;
-    }
+    gpio_set_level(GPIO_NUM_27 , 0);
   }
 
   // Now, just mapping the velocities to the delays
@@ -244,40 +232,52 @@ void speed_publisher(double x1, double x2, double x3, double vel_1, double vel_2
   vel_2 = modulus(vel_2);   // Direction pins are already set 
   vel_3 = modulus(vel_3);   // Direction pins are already set 
   
-  x1 = (vel_1/0.029) * 35 + 20; // 1 rad/sec = 35 hz
-  x2 = (vel_2/0.029) * 35 + 20; // 1 rad/sec = 35 hz
-  x3 = (vel_3/0.029) * 35 + 20; // 1 rad/sec = 35 hz
+  x1 = (1.8/((vel_1/0.029)*(180/M_PI)))*1e6; // 2pi rad/sec takes 200 signals in one sec
+  x2 = (1.8/((vel_2/0.029)*(180/M_PI)))*1e6; // 2pi rad/sec takes 200 signals in one sec
+  x3 = (1.8/((vel_3/0.029)*(180/M_PI)))*1e6; // 2pi rad/sec takes 200 signals in one sec
 
-  if(x1 > highest_frequency){
-    x1 = highest_frequency;
-    
+  if(x1 < lowest_delay){
+    x1  = lowest_delay;
   }
-  if(x2 > highest_frequency){
-    x2 = highest_frequency;
+  if(x2 < lowest_delay){
+    x2  = lowest_delay;
   }
-  if(x3 > highest_frequency){ 
-    x3 = highest_frequency;
+  if(x3 < lowest_delay){ 
+    x3  = lowest_delay;
   }
 
+  
   printf("x1 : %f x2 : %f and x3 : %f \n",x1, x2, x3);
   // printf("x1 : %lld x2 : %lld and x3 : %lld\n", (motor_one_curr_time- motor_one_prev_time), (motor_two_curr_time - motor_three_prev_time), (motor_three_curr_time - motor_three_prev_time));
-  if(x1 >= 20){
-    ledc_set_freq(LEDC_HIGH_SPEED_MODE, LEDC_TIMER_0, abs(x1));
+  if((m1_timer_curr - m1_timer_prev) >= x1 && x1 > lowest_delay){
+    m1_count++;
+    if(m1_count == 1){
+      gpio_set_level(step_pin_m1,0);
+    }
+    if(m1_count == 2){
+      gpio_set_level(step_pin_m1,1);
+      m1_count = 0;
+    }
   }
-  else{
-    ledc_stop(LEDC_HIGH_SPEED_MODE, LEDC_TIMER_0, 1);
+  if((m2_timer_curr - m2_timer_prev) >= x2 && x2 > lowest_delay){ 
+    m2_count++;
+    if(m2_count == 1){
+      gpio_set_level(step_pin_m2,0);
+    }
+    if(m2_count == 2){
+      gpio_set_level(step_pin_m2,1);
+      m2_count = 0;
+    }
   }
-  if(x2 >= 20){
-    ledc_set_freq(LEDC_HIGH_SPEED_MODE, LEDC_TIMER_1, abs(x2));
-  }
-  else{
-    ledc_stop(LEDC_HIGH_SPEED_MODE, LEDC_TIMER_1, 1);
-  }
-  if(x3 >= 20){
-    ledc_set_freq(LEDC_HIGH_SPEED_MODE, LEDC_TIMER_2, abs(x3));
-  }
-  else{
-    ledc_stop(LEDC_HIGH_SPEED_MODE, LEDC_TIMER_2, 1);
+  if((m3_timer_curr - m3_timer_prev) >= x3 && x3 > lowest_delay){ 
+    m3_count++;
+    if(m3_count == 1){
+      gpio_set_level(step_pin_m3,0);
+    }
+    if(m3_count == 2){
+      gpio_set_level(step_pin_m3,1);
+      m3_count = 0;
+    }
   }
 }
 
@@ -291,95 +291,14 @@ void speed_publisher(double x1, double x2, double x3, double vel_1, double vel_2
 
 void stepper_task(void *arg){
 
-  ledc_timer_config_t ledc_timer_m1 = {
-        // Running Timer 0 in high speed mode. Not picky about which source
-        // clock to use, so let it auto-select.
-        .timer_num = LEDC_TIMER_0,
-        .speed_mode = LEDC_HIGH_SPEED_MODE,
-        .clk_cfg = LEDC_APB_CLK,
-
-        .freq_hz = 10000,  
-        .duty_resolution = LEDC_TIMER_12_BIT,
-    };
-  ledc_timer_config_t ledc_timer_m2 = {
-        // Running Timer 0 in high speed mode. Not picky about which source
-        // clock to use, so let it auto-select.
-        .timer_num = LEDC_TIMER_1,
-        .speed_mode = LEDC_HIGH_SPEED_MODE,
-        .clk_cfg = LEDC_APB_CLK,
-
-        .freq_hz = 10000,  
-        .duty_resolution = LEDC_TIMER_12_BIT,
-    };
-  ledc_timer_config_t ledc_timer_m3 = {
-        // Running Timer 0 in high speed mode. Not picky about which source
-        // clock to use, so let it auto-select.
-        .timer_num = LEDC_TIMER_2,
-        .speed_mode = LEDC_HIGH_SPEED_MODE,
-        .clk_cfg = LEDC_APB_CLK,
-
-        .freq_hz = 10000,  
-        .duty_resolution = LEDC_TIMER_12_BIT,
-    };
-
-  ledc_timer_config(&ledc_timer_m1);
-  ledc_timer_config(&ledc_timer_m2);
-  ledc_timer_config(&ledc_timer_m3);
-
-  ledc_channel_config_t ledc_channel_one = {
-    
-    .timer_sel  = LEDC_TIMER_0,
-    .speed_mode = LEDC_HIGH_SPEED_MODE,
-
-    // Details for this output
-    .channel    = LEDC_CHANNEL_0,
-    .duty       = 0, // Start out stopped (0% duty cycle)
-    .hpoint     = 0,
-    .gpio_num   = step_pin_m1,
-    };
-  ledc_channel_config(&ledc_channel_one);
-
-  ledc_channel_config_t ledc_channel_two = {
-    
-    .timer_sel  = LEDC_TIMER_1,
-    .speed_mode = LEDC_HIGH_SPEED_MODE,
-
-    // Details for this output
-    .channel    = LEDC_CHANNEL_1,
-    .duty       = 0, // Start out stopped (0% duty cycle)
-    .hpoint     = 0,
-    .gpio_num   = step_pin_m2,
-    };
-  ledc_channel_config(&ledc_channel_two);
-
-  ledc_channel_config_t ledc_channel_three = {
-    
-    .timer_sel  = LEDC_TIMER_2,
-    .speed_mode = LEDC_HIGH_SPEED_MODE,
-
-    // Details for this output
-    .channel    = LEDC_CHANNEL_2,
-    .duty       = 0, // Start out stopped (0% duty cycle)
-    .hpoint     = 0,
-    .gpio_num   = step_pin_m3,
-    };
-  ledc_channel_config(&ledc_channel_three);
-
 	gpio_config_t io_conf = {
         .mode = GPIO_MODE_OUTPUT,
         .intr_type = GPIO_INTR_DISABLE,
         .pull_down_en = 0,
         .pull_up_en = 1,
-        .pin_bit_mask = ((1ULL<<dire_pin_m1) | (1ULL<<dire_pin_m2) | (1ULL<<dire_pin_m3) ),
+        .pin_bit_mask = ((1ULL<<dire_pin_m1) | (1ULL<<dire_pin_m2) | (1ULL<<dire_pin_m3) | (1ULL<<step_pin_m1) | (1ULL<<step_pin_m2) | (1ULL<<step_pin_m3)),
     };
   
-  ledc_set_duty(ledc_channel_one.speed_mode, ledc_channel_one.channel, 2048);
-  ledc_update_duty(ledc_channel_one.speed_mode, ledc_channel_one.channel);
-  ledc_set_duty(ledc_channel_two.speed_mode, ledc_channel_two.channel, 2048);
-  ledc_update_duty(ledc_channel_two.speed_mode, ledc_channel_two.channel);
-  ledc_set_duty(ledc_channel_three.speed_mode, ledc_channel_three.channel, 2048);
-  ledc_update_duty(ledc_channel_three.speed_mode, ledc_channel_three.channel);
-    
 
 	esp_err_t err = gpio_config(&io_conf);
 	if (err == ESP_OK)
@@ -411,62 +330,41 @@ void stepper_task(void *arg){
                                   {    -sin(rot_z)    ,    cos(rot_z)    , 0},\
                                   {         0         ,        0         , 1}};
   
-  
+  m1_timer_prev = timer();
+  m2_timer_prev = timer();
+  m3_timer_prev = timer();
+
 	while(1){
-    time_t = 0;
-      time_z = timer();
-      time_t = time_z / 1000000; // As time was in microseconds
+		time_z = timer();
+    
+    time_t = time_z / 1000000; // As time was in microseconds
 
-      
-      vel_x = 0;  // v = r*Ω*sin(Θ) 
-      vel_y = 0;  // v = r*Ω*cos(Θ)
-      vel_z = 0;      
-      if(time_t < 3){
-        printf("loop1");
-      // printf(" some time: %f \n",time_t);
-      vel_x = 0.2;  // v = r*Ω*sin(Θ) 
-      vel_y = 0;  // v = r*Ω*cos(Θ)
-      vel_z = 0;       
+		// printf(" time : %f \n",time_t);
+		theta = angular_velocity*time_t;
 
-      // Now we need to publish all the velocties for the individual wheel with the help of the parameters
-      }
-      else if(time_t < 6){
-        printf("loop2");
-      // printf(" some time: %f \n",time_t);
-      vel_x = -0.2;  // v = r*Ω*sin(Θ) 
-      vel_y = 0; // v = r*Ω*cos(Θ)
-      vel_z = 0;
-      }          
-      else if(time_t < 9){
-        vel_x = 0;
-        vel_y = 0.2;
-        vel_z = 0;
-      }     
-      else if(time_t < 12){
-        vel_x = 0;
-        vel_y = -0.2;
-        vel_z = 0;
-      }                // equation for the circle i.e. no rotation
-      // printf(" vel_x : %f vel_y : %f  \n", vel_x, vel_y);
+    if(theta >= 6.28){
+      vTaskDelete(NULL);
+    }
 
-      double coefficients[3][4] =  {{     -1    ,       0.5        ,     0.5         , vel_x  },\
-                                    {      0    , 	-sqrt(3)/2     ,   sqrt(3)/2     , vel_y  },\
-                                    {     1.0   ,       1.0        ,     1.0         , vel_z  }};  // The allocation matrix along with a column of the desired velocities
-      
-      velocities = findSolution(coefficients);
+    vel_x = radius*(angular_velocity)*cos(theta);  // v = r*Ω*sin(Θ) 
+    vel_y = radius*(angular_velocity)*sin(theta);  // v = r*Ω*cos(Θ)
+		vel_z = 0;                                // equation for the circle i.e. no rotation
+    // printf(" vel_x : %f vel_y : %f  \n", vel_x, vel_y);
 
-      vel_1 = velocities[0];
-      vel_2 = velocities[1];
-      vel_3 = velocities[2];
-      speed_publisher( x1, x2, x3, vel_1, vel_2, vel_3);
-      printf("vel_1: %f, vel_2: %f, and vel_3: %f \n", vel_1, vel_2, vel_3);
-      free(velocities);
-      if(time_t >= 12){
-        ledc_stop(LEDC_HIGH_SPEED_MODE, LEDC_TIMER_0, 0);
-        ledc_stop(LEDC_HIGH_SPEED_MODE, LEDC_TIMER_1, 1);
-        ledc_stop(LEDC_HIGH_SPEED_MODE, LEDC_TIMER_2, 2);
-        vTaskDelete(NULL);
-      }
+		double coefficients[3][4] =  {{      1    ,     -0.5         ,     -0.5        , vel_x  },\
+                                  {      0    , 	-sqrt(3)/2     ,   sqrt(3)/2     , vel_y  },\
+                                  {     -1.0  ,      -1.0        ,     -1.0        , vel_z  }};  // The allocation matrix along with a column of the desired velocities
+		
+		velocities = findSolution(coefficients);
+
+		vel_1 = velocities[0];
+		vel_2 = velocities[1];
+		vel_3 = velocities[2];
+    // printf("vel_1: %f, vel_2: %f, and vel_3: %f \n", vel_1, vel_2, vel_3);
+    free(velocities);
+
+		// Now we need to publish all the velocties for the individual wheel with the help of the parameters
+		speed_publisher( x1, x2, x3, vel_1, vel_2, vel_3);
 	}
   
 }

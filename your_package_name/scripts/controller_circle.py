@@ -18,7 +18,7 @@
 '''
 
 # Team ID:		2998
-# Author List:		Alqama Shaikh, Sameer Gupta, and Khushi BaliaS
+# Author List:		Alqama Shaikh, Sameer Gupta, and Khushi Balia
 # Filename:		feedback.py
 # Functions:
 #			[ Comma separated list of functions in this file ]
