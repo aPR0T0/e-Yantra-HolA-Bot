@@ -15,6 +15,7 @@
     ],
     "files.associations": {
         "cmath": "cpp",
-        "complex": "cpp"
+        "complex": "cpp",
+        "servo.h": "c"
     }
 }
