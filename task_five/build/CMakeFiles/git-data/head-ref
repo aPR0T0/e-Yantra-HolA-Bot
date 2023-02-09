@@ -1,0 +1,31 @@
+b8266bc852ad36bd8899499171de328b97a9463f 5958f0816d827e15a660a1d731b643f53a566fdf aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1673453021 +0530	pull: Fast-forward
+5958f0816d827e15a660a1d731b643f53a566fdf 98087b297ed7e6bdbd2112b512c8d890e9669f01 aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1673456632 +0530	commit: made the template ready for the inverse kinematics
+98087b297ed7e6bdbd2112b512c8d890e9669f01 1083306372153618d185545d037d6ce2d8886f39 aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1673456814 +0530	commit: Naming is now good
+1083306372153618d185545d037d6ce2d8886f39 5a1c990a63b79fd2bf3030cca08865be9119ff0a aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1673714113 +0530	commit: new pin config
+5a1c990a63b79fd2bf3030cca08865be9119ff0a 7b52fdb5853edbc34775afe1e54bb9ad438ad557 aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1673714704 +0530	commit: added templates for each functionality
+7b52fdb5853edbc34775afe1e54bb9ad438ad557 a3672cb53b47bebb8943fd5f36cae3150e09a1ff aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1673875443 +0530	commit: triangle code done
+a3672cb53b47bebb8943fd5f36cae3150e09a1ff 8ed615abded733de29dd17c0258351806c5ae24e aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1673934673 +0530	commit: Written the code for stopping the motor
+8ed615abded733de29dd17c0258351806c5ae24e f0f03febe9b49950a5d1411583087870ba1501c0 aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1673935681 +0530	commit: Logic nearly ready just need to see conversion
+f0f03febe9b49950a5d1411583087870ba1501c0 82c9481758440f76147b52e0e3dd49e96aa741f1 aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1673972941 +0530	commit: Made circle code ready just need to tweak some val
+82c9481758440f76147b52e0e3dd49e96aa741f1 52278c2292e04dfdef6e1e0e23af6feda7e59ca0 aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1673972999 +0530	commit: Some minor debugging
+52278c2292e04dfdef6e1e0e23af6feda7e59ca0 5549be6b0aa88752300ce6a45ddbbed34a477b85 aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1674060316 +0530	commit: added new code for esp
+5549be6b0aa88752300ce6a45ddbbed34a477b85 0f60e58daa6ffda0f42024d518579920f6cf2cd1 aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1674062577 +0530	commit: Now all pins are defined properly
+0f60e58daa6ffda0f42024d518579920f6cf2cd1 fd45c35a9de08ecc2247b114309137d7516ad04a aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1674063364 +0530	commit: cleaning some changes
+fd45c35a9de08ecc2247b114309137d7516ad04a e9da8563ff5f30dd333b5a1663cf9dd19f54c51d aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1674063432 +0530	commit: module for esp32 added
+e9da8563ff5f30dd333b5a1663cf9dd19f54c51d 79f272dcbd3b7695cf5ddb3d06ed60d8f8182549 aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1674063536 +0530	commit: all pins are defines properly now
+79f272dcbd3b7695cf5ddb3d06ed60d8f8182549 07e1b0e773de1879041195c43e9f4ac8e391731e aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1674064843 +0530	commit: Now test code is ready
+07e1b0e773de1879041195c43e9f4ac8e391731e 26870cde68124aace9265adf797590188e7b9a2d aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1674112340 +0530	commit: i m good boy
+26870cde68124aace9265adf797590188e7b9a2d ad80166e29fd07d9e638489f2683128b66c1c592 aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1674296380 +0530	commit: added working step code
+ad80166e29fd07d9e638489f2683128b66c1c592 c8e741492e8b04994e662a873d6cb95798af66a5 aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1674666255 +0530	commit: addedd working c code for trianglgle
+c8e741492e8b04994e662a873d6cb95798af66a5 38fa6ea4616df449454f8a7ebdc6badfbf996bfb aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1674720175 +0530	commit: added the proper code for the circle
+38fa6ea4616df449454f8a7ebdc6badfbf996bfb 2de568ae35925df5db8e7be4ecb20cf97f4dbcfe aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1675007047 +0530	commit: added different test firmwares and up for verification
+2de568ae35925df5db8e7be4ecb20cf97f4dbcfe 96ddbcbc3f5de97a3d5cf8723138520b4c6ec993 aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1675099561 +0530	commit: circle code needs to be rethought
+96ddbcbc3f5de97a3d5cf8723138520b4c6ec993 e0cd8978e83a43edbe4cbb1317e3842554d3341a aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1675183719 +0530	commit: some minor issues left
+e0cd8978e83a43edbe4cbb1317e3842554d3341a d8f6f7762c5adb828069e567febafe7794e22791 aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1675186717 +0530	commit: v = r*omega was the catch, now lelet's test
+d8f6f7762c5adb828069e567febafe7794e22791 f743fd57668f7f45a8d3831ac23f40cffedeb09a aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1675271202 +0530	commit: circle code needs to be improvoved for now it is making a spiral due to non-proper distribution of velocities in the frequency spectrum
+f743fd57668f7f45a8d3831ac23f40cffedeb09a 46f4a4fb9765d010a7c0764db10997c817282e75 aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1675272711 +0530	commit: Circle logic works gr8 in simulation
+46f4a4fb9765d010a7c0764db10997c817282e75 c36e6f52c44ad254dfd6559f2174a7b55e70bd8c aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1675339104 +0530	commit: added ota transfer template
+c36e6f52c44ad254dfd6559f2174a7b55e70bd8c 82bc59e896a4c3fef9a25951ab1416506dc39fdc aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1675431151 +0530	commit: L done
+82bc59e896a4c3fef9a25951ab1416506dc39fdc 2e0778468f6a341362ef3d7883b3b4742f96496c aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1675507325 +0530	commit: Finally the circle is formed li little crooked but formedd
+2e0778468f6a341362ef3d7883b3b4742f96496c b520fb01839be1a90d65be0653af44d1aec81ef1 aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1675774420 +0530	pull: Merge made by the 'recursive' strategy.
+b520fb01839be1a90d65be0653af44d1aec81ef1 022c7ce22b71de367f602c33d5fda037021f2280 aPR0T0 <awshaikh_b21@me.vjti.ac.in> 1675774480 +0530	commit: renamed pwm to task_4

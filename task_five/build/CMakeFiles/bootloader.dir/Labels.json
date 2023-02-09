@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/proto/catkin_ws/src/task_five/build/CMakeFiles/bootloader"
+		},
+		{
+			"file" : "/home/proto/catkin_ws/src/task_five/build/CMakeFiles/bootloader.rule"
+		},
+		{
+			"file" : "/home/proto/catkin_ws/src/task_five/build/CMakeFiles/bootloader-complete.rule"
+		},
+		{
+			"file" : "/home/proto/catkin_ws/src/task_five/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule"
+		},
+		{
+			"file" : "/home/proto/catkin_ws/src/task_five/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule"
+		},
+		{
+			"file" : "/home/proto/catkin_ws/src/task_five/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule"
+		},
+		{
+			"file" : "/home/proto/catkin_ws/src/task_five/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
+		},
+		{
+			"file" : "/home/proto/catkin_ws/src/task_five/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule"
+		},
+		{
+			"file" : "/home/proto/catkin_ws/src/task_five/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule"
+		},
+		{
+			"file" : "/home/proto/catkin_ws/src/task_five/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"bootloader"
+		],
+		"name" : "bootloader"
+	}
+}
