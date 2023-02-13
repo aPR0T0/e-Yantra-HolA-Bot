@@ -1,8 +1,8 @@
-# Install script for directory: D:/e-Yantra-HolA-Bot/task_five/main
+# Install script for directory: /home/sameergupta/e-Yantra-HolA-Bot/task_five/main
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/line_following")
+  set(CMAKE_INSTALL_PREFIX "/usr/local")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
