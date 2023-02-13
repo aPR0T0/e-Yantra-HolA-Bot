@@ -37,7 +37,7 @@ from geometry_msgs.msg import Pose2D	# Required to publish ARUCO's detected posi
 import requests
 import json 
 
-
+count = 0
 ############################ GLOBALS #############################
 
 #aruco_publisher = rospy.Publisher('detected_aruco', Pose2D)
@@ -46,9 +46,10 @@ import json
 ##################### FUNCTION DEFINITIONS #######################
 
 # NOTE :  You may define multiple helper functions here and use in your code
-
+cor_x = 0
+cor_y = 0
 def callback(data):
-	# Bridge is Used to Convert ROS Image message to OpenCV image
+    	# Bridge is Used to Convert ROS Image message to OpenCV image
 	br = CvBridge()
 	rospy.loginfo("receiving camera frame")
 	get_frame = br.imgmsg_to_cv2(data, desired_encoding='bgr8')		# Receiving raw image in a "grayscale" format
@@ -56,34 +57,54 @@ def callback(data):
 	arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_1000)
 	arucoParams = cv2.aruco.DetectorParameters_create()
 	(corners, ids, rejected) = cv2.aruco.detectMarkers(current_frame, arucoDict,parameters=arucoParams)
-	print(corners, ids, rejected)
+	# print(corners, ids, rejected)
+	global cx_sum , cy_sum, dist_x, dist_y, cor_x, cor_y
+
+	
+	cx_sum = 0
+	cy_sum = 0
+	dist_x = 0
+	dist_y = 0
 	if len(corners) > 0:
         # flatten the ArUco IDs list
 		ids = ids.flatten()
-		for i in range(len(corners)):
-			(topLeft, topRight, bottomRight, bottomLeft) = corners[i][0][0],corners[i][0][1],corners[i][0][2],corners[i][0][3]
-			topRight = (int(topRight[0]), int(topRight[1]))
-			bottomRight = (int(bottomRight[0]), int(bottomRight[1]))
-			bottomLeft = (int(bottomLeft[0]), int(bottomLeft[1]))
-			topLeft = (int(topLeft[0]), int(topLeft[1]))
-			cv2.line(current_frame, topLeft, topRight, (0, 255, 0), 2)
-			cv2.line(current_frame, topRight, bottomRight, (0, 255, 0), 2)
-			cv2.line(current_frame, bottomRight, bottomLeft, (0, 255, 0), 2)
-			cv2.line(current_frame, bottomLeft, topLeft, (0, 255, 0), 2)
-			cX = int((topLeft[0] + bottomRight[0]) / 2.0)
-			cY = int((topLeft[1] + bottomRight[1]) / 2.0)
-			cv2.circle(current_frame, (cX, cY), 4, (0, 0, 255), -1)
-			rvecs, tvecs, obj_points = cv2.aruco.estimatePoseSingleMarkers(corners,0.1524,numpy.array([[339.629804, 0.000000, 265.833298],
-	[0.000000, 335.356282, 155.561312],[0.000000, 0.000000, 1.000000]]),numpy.array([-0.254560, 0.034596, 0.007207, 0.025113, 0.000000]))
-			print('Hi', rvecs, tvecs)
 
+		print(ids)
+
+		if((0 in ids) and (1 in ids) and (2 in ids) and (3 in ids) and (4 in ids)):
+			for i in range(4):
+				
+				(topLeft, topRight, bottomRight, bottomLeft) = corners[i][0][0],corners[i][0][1],corners[i][0][2],corners[i][0][3]
+				
+				topRight = (int(topRight[0]), int(topRight[1]))
+				bottomRight = (int(bottomRight[0]), int(bottomRight[1]))
+				bottomLeft = (int(bottomLeft[0]), int(bottomLeft[1]))
+				topLeft = (int(topLeft[0]), int(topLeft[1]))
+				
+				cv2.line(current_frame, topLeft, topRight, (0, 255, 0), 2)
+				cv2.line(current_frame, topRight, bottomRight, (0, 255, 0), 2)
+				cv2.line(current_frame, bottomRight, bottomLeft, (0, 255, 0), 2)
+				cv2.line(current_frame, bottomLeft, topLeft, (0, 255, 0), 2)
+				
+				cX = int((topLeft[0] + bottomRight[0]) / 2.0)
+				cY = int((topLeft[1] + bottomRight[1]) / 2.0)
+				
+				cv2.circle(current_frame, (cX, cY), 4, (0, 0, 255), -1)
+
+				cx_sum += cX * 0.25
+				cy_sum += cY * 0.25
+				cor_x = cx_sum
+				cor_y = cy_sum
+				if(ids[i] == 4 and cor_x > 0 and cor_y>0):
+					dist_x  = cX - cor_x
+					dist_y = cY - cor_y
 			# string_arr = numpy.array_str(rvecs)
 			# pload = {"kp":string_arr,"ki":"jyfujfy","kd":"hghgf"}
 			# print(json.dumps(pload))
-			# r = requests.post('http://192.168.122.49/api/v1/pid', json.dumps(pload));
+			# r = requests.post('http://192.168.154.50/api/v1/pid', json.dumps(pload));
 			# r_dictionary= r
 			# print(r_dictionary)
-		
+			print("distx:", dist_x, 'disty:', dist_y)
 	cv2.imshow("output", current_frame)
 	cv2.waitKey(3)
 	############ ADD YOUR CODE HERE ############
