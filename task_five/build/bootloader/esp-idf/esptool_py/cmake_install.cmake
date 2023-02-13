@@ -1,8 +1,8 @@
-# Install script for directory: /home/proto/esp/esp-idf/components/esptool_py
+# Install script for directory: D:/Espressif/frameworks/esp-idf-v4.2.3/components/esptool_py
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/usr/local")
+  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/bootloader")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 

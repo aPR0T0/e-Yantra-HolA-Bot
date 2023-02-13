@@ -1,8 +1,8 @@
-# Install script for directory: /home/proto/esp/esp-idf/components/soc
+# Install script for directory: D:/Espressif/frameworks/esp-idf-v4.2.3/components/soc
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/usr/local")
+  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/bootloader")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -34,7 +34,8 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/proto/catkin_ws/src/task_five/build/bootloader/esp-idf/soc/esp32/cmake_install.cmake")
+  include("D:/Wall-E/7_line_following/build/bootloader/esp-idf/soc/src/esp32/cmake_install.cmake")
+  include("D:/Wall-E/7_line_following/build/bootloader/esp-idf/soc/soc/cmake_install.cmake")
 
 endif()
 

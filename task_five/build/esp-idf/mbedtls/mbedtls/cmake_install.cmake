@@ -1,8 +1,8 @@
-# Install script for directory: /home/proto/esp/esp-idf/components/mbedtls/mbedtls
+# Install script for directory: D:/Espressif/frameworks/esp-idf-v4.2.3/components/mbedtls/mbedtls
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/usr/local")
+  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/line_following")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -34,9 +34,8 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/proto/catkin_ws/src/task_five/build/esp-idf/mbedtls/mbedtls/include/cmake_install.cmake")
-  include("/home/proto/catkin_ws/src/task_five/build/esp-idf/mbedtls/mbedtls/3rdparty/cmake_install.cmake")
-  include("/home/proto/catkin_ws/src/task_five/build/esp-idf/mbedtls/mbedtls/library/cmake_install.cmake")
+  include("D:/Wall-E/7_line_following/build/esp-idf/mbedtls/mbedtls/library/cmake_install.cmake")
+  include("D:/Wall-E/7_line_following/build/esp-idf/mbedtls/mbedtls/include/cmake_install.cmake")
 
 endif()
 
