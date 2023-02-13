@@ -98,13 +98,13 @@ def callback(data):
 				if(ids[i] == 4 and cor_x > 0 and cor_y>0):
 					dist_x  = cX - cor_x
 					dist_y = cY - cor_y
-			# string_arr = numpy.array_str(rvecs)
-			# pload = {"kp":string_arr,"ki":"jyfujfy","kd":"hghgf"}
-			# print(json.dumps(pload))
-			# r = requests.post('http://192.168.154.50/api/v1/pid', json.dumps(pload));
-			# r_dictionary= r
-			# print(r_dictionary)
 			print("distx:", dist_x, 'disty:', dist_y)
+			# string_arr = numpy.array_str(rvecs)
+			pload = {"kp":str(dist_x),"ki":str(dist_y),"kd":"hghgf"}
+			print(json.dumps(pload))
+			r = requests.post('http://192.168.154.50/api/v1/pid', json.dumps(pload));
+			r_dictionary= r
+			print(r_dictionary)
 	cv2.imshow("output", current_frame)
 	cv2.waitKey(3)
 	############ ADD YOUR CODE HERE ############
