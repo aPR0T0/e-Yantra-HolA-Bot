@@ -1,4 +1,4 @@
-# Install script for directory: D:/Wall-E/7_line_following/main
+# Install script for directory: D:/e-Yantra-HolA-Bot/task_five/main
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

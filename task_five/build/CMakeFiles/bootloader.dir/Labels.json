@@ -2,34 +2,34 @@
 	"sources" : 
 	[
 		{
-			"file" : "D:/Wall-E/7_line_following/build/CMakeFiles/bootloader"
+			"file" : "D:/e-Yantra-HolA-Bot/task_five/build/CMakeFiles/bootloader"
 		},
 		{
-			"file" : "D:/Wall-E/7_line_following/build/CMakeFiles/bootloader.rule"
+			"file" : "D:/e-Yantra-HolA-Bot/task_five/build/CMakeFiles/bootloader.rule"
 		},
 		{
-			"file" : "D:/Wall-E/7_line_following/build/CMakeFiles/bootloader-complete.rule"
+			"file" : "D:/e-Yantra-HolA-Bot/task_five/build/CMakeFiles/bootloader-complete.rule"
 		},
 		{
-			"file" : "D:/Wall-E/7_line_following/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule"
+			"file" : "D:/e-Yantra-HolA-Bot/task_five/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule"
 		},
 		{
-			"file" : "D:/Wall-E/7_line_following/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule"
+			"file" : "D:/e-Yantra-HolA-Bot/task_five/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule"
 		},
 		{
-			"file" : "D:/Wall-E/7_line_following/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule"
+			"file" : "D:/e-Yantra-HolA-Bot/task_five/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule"
 		},
 		{
-			"file" : "D:/Wall-E/7_line_following/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
+			"file" : "D:/e-Yantra-HolA-Bot/task_five/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
 		},
 		{
-			"file" : "D:/Wall-E/7_line_following/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule"
+			"file" : "D:/e-Yantra-HolA-Bot/task_five/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule"
 		},
 		{
-			"file" : "D:/Wall-E/7_line_following/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule"
+			"file" : "D:/e-Yantra-HolA-Bot/task_five/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule"
 		},
 		{
-			"file" : "D:/Wall-E/7_line_following/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule"
+			"file" : "D:/e-Yantra-HolA-Bot/task_five/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule"
 		}
 	],
 	"target" : 

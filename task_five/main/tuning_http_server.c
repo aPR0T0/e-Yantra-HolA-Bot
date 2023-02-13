@@ -160,15 +160,16 @@ static esp_err_t tuning_pid_post_handler(httpd_req_t *req)
         return ESP_FAIL;
     }
     
-    pid_constants.kp = (float)cJSON_GetObjectItem(root, "kp")->valuedouble;
-    pid_constants.ki = (float)cJSON_GetObjectItem(root, "ki")->valuedouble;
-    pid_constants.kd = (float)cJSON_GetObjectItem(root, "kd")->valuedouble;
+    pid_constants.kp = (string)cJSON_GetObjectItem(root, "kp");
+    pid_constants.ki = (string)cJSON_GetObjectItem(root, "ki");
+    pid_constants.kd = (string)cJSON_GetObjectItem(root, "kd");
+    printf("%s\n %s\n %s\n",pid_constants.kp,pid_constants.ki,pid_constants.kd );
 
     cJSON_Delete(root);
     httpd_resp_sendstr(req, "Post control value successfully");
 
     pid_constants.val_changed = true;
-    return ESP_OK;
+    return ESP_OK;
 }
 
 static esp_err_t start_tuning_http_server_private()

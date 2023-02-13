@@ -1,8 +1,8 @@
 {
     "project_name":       "bootloader",
     "project_path":       "D:/Espressif/frameworks/esp-idf-v4.2.3/components/bootloader/subproject",
-    "build_dir":          "D:/Wall-E/7_line_following/build/bootloader",
-    "config_file":        "D:/Wall-E/7_line_following/sdkconfig",
+    "build_dir":          "D:/e-Yantra-HolA-Bot/task_five/build/bootloader",
+    "config_file":        "D:/e-Yantra-HolA-Bot/task_five/sdkconfig",
     "config_defaults":    "",
     "app_elf":            "bootloader.elf",
     "app_bin":            "bootloader.bin",

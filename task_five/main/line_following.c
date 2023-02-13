@@ -1,237 +1,469 @@
-#include <stdio.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include "sra_board.h"
-#include "tuning_http_server.h"
+//#define debug
+#include <time.h>
+// C Headers
+#include <stdio.h>
+#include <math.h>
+#include <servo.h>
 
-#define MODE NORMAL_MODE
-#define BLACK_MARGIN 400
-#define WHITE_MARGIN 2000
-#define bound_LSA_LOW 0
-#define bound_LSA_HIGH 1000
+// Timer functions in FreeRTOS
+#include "freertos/FreeRTOS.h"
+#include <freertos/timers.h>
+#include "driver/ledc.h"
 
+// Including Web-Socket files
+#include <tuning_http_server.h>
+#include <wifi_handler.h>
+
+const int stepsPerRevolution = 200;
+static int taskCore = 0; // The core on which we need to run the task
+
+const int kp_x = 8000;
+const int kp_y = 1;
+const int kp_z = 1;
+
+// Getting current position and orientation
+float current_x, current_y, current_theta;
+
+const float angular_velocity = 0.5; // rad/sec -> vel_x, vel_y = s/R
+const float radius = 0.8; // Increase this only when u need a larger radius
+
+#define highest_delay  20000
+#define lowest_delay  850
+
+#define highest_speed  0.67
+#define lowest_speed  0
+
+// STEP and DIRECTION output pins for stepper motor driver.
+static const gpio_num_t step_pin_m1 = GPIO_NUM_33;
+static const gpio_num_t dire_pin_m1 = GPIO_NUM_32;
+
+static const gpio_num_t step_pin_m2 = GPIO_NUM_14;
+static const gpio_num_t dire_pin_m2 = GPIO_NUM_27;
+
+static const gpio_num_t step_pin_m3 = GPIO_NUM_16;
+static const gpio_num_t dire_pin_m3 = GPIO_NUM_17;
+
+float_t m1_timer_curr, m2_timer_curr, m3_timer_curr;
+float_t m1_timer_prev, m2_timer_prev, m3_timer_prev;
+
+double x1, x2, x3; //These are the delay variables which will help us tweak delay for the speeds of the motors
+double_t before;
+double prev_time;
+int count = 0;
+int count_2 = 0; // Used to assist the step cycle
+int m1_count = 0;
+int m2_count = 0;
+int m3_count = 0;
+int idx = 0;
+
+double goals[4][3] = {  {   350,   300 ,  M_PI/4  },
+                        {   150,   300 , 3*M_PI/4 },
+                        {   150,   150 , -3*M_PI/4},
+                        {   350,   150 ,  -M_PI/4 }  };
+
+
+#define TAG "MCPWM_SERVO_CONTROL"
+
+servo_config servo_a = {
+	.servo_pin = SERVO_A,
+	.min_pulse_width = CONFIG_SERVO_A_MIN_PULSEWIDTH,
+	.max_pulse_width = CONFIG_SERVO_A_MAX_PULSEWIDTH,
+	.max_degree = CONFIG_SERVO_A_MAX_DEGREE,
+	.mcpwm_num = MCPWM_UNIT_0,
+	.timer_num = MCPWM_TIMER_0,
+	.gen = MCPWM_OPR_A,
+};
+
+servo_config servo_b = {
+	.servo_pin = SERVO_B,
+	.min_pulse_width = CONFIG_SERVO_B_MIN_PULSEWIDTH,
+	.max_pulse_width = CONFIG_SERVO_B_MAX_PULSEWIDTH,
+	.max_degree = CONFIG_SERVO_B_MAX_DEGREE,
+	.mcpwm_num = MCPWM_UNIT_0,
+	.timer_num = MCPWM_TIMER_0,
+	.gen = MCPWM_OPR_B,
+};
+
+
+///////////////////////////////////////////////////////////////////////
 /*
- * weights given to respective line sensor
- */
-const int weights[4] = {3,1,-1,-3};
+  Function   :    Timer
+  Arguments  ;    none
+  Returns    :    current time
+*/
+int64_t timer(){
 
-/*
- * Motor value boundts
- */
-int optimum_duty_cycle;
-int lower_duty_cycle;
-int higher_duty_cycle;
-float left_duty_cycle = 0, right_duty_cycle = 0;
+  // Time function initialization
+  if(count == 0){
+    before = esp_timer_get_time();
+    prev_time = before / 1e6;
+    count++;
+  }
+  int64_t difference = esp_timer_get_time() - before;
+  return difference;
 
-/*
- * Line Following PID Variables
- */
-float error=0, prev_error=0, difference, cumulative_error, correction;
-
-/*
- * Union containing line sensor readings
- */
-line_sensor_array line_sensor_readings, line_sensor;
-
-int value;                                      ///made
-static const gpio_num_t Ir_sensor = GPIO_NUM_19;   ////made
-int counter = 0;//made
-
-void Ir()                                            /// made
-{value = gpio_get_level(Ir_sensor);
-
-//ESP_LOGI(TAG,"The Value of IR is %d",value);
 }
 
-//made 
+///////////////////////////////////////////////////////////////////////
+/*
+  Function   :    differential timer
+  Arguments  ;    none
+  Returns    :    dTime
+*/
+int64_t d_timer(int64_t prev_time ){
+  int64_t difference = esp_timer_get_time() - prev_time;
+  return difference;
+}
+////////////////////////////////////////////////////////////////////////
 
-void check_counter()
+////////////////////////////////////////////////////////////////////////
+/*
+  Function   :    modulus
+  Arguments  ;    double -> number
+  Working    :    Gets the modulus of the given number
+  Returns    :    a number -> double
+*/
+double modulus(double z){
+
+  if(z<0){
+    z = -z;
+  }
+  return z; 
+
+}
+///////////////////////////////////////////////////////////////////////
+
+
+// ##### This part is only for the inverse kinematics to get the solution of for the desired output at any given time ##### //
+
+/*
+  Function    :   determinantOfMatrix()
+  Arguments   :   a 3x3 matrix with all the elements in it
+  type        :   double[][]
+  Returns     :   Determinant of the given 2d matrix 
+*/
+
+double determinantOfMatrix(double mat[3][3])
 {
-    if(((line_sensor_readings.adc_reading[0] - 50<= line_sensor.adc_reading[0]) && (line_sensor_readings.adc_reading[0] + 50>= line_sensor.adc_reading[0]))  || ((line_sensor_readings.adc_reading[3] - 50<= line_sensor.adc_reading[3]) && (line_sensor.adc_reading[3]<= line_sensor_readings.adc_reading[3] + 50))){
-        counter++;
-    }
-    else{
-        counter = 0;
-    }
+    double ans;
+    ans =   mat[0][0] * (mat[1][1] * mat[2][2] - mat[2][1] * mat[1][2])
+          - mat[0][1] * (mat[1][0] * mat[2][2] - mat[1][2] * mat[2][0])
+          + mat[0][2] * (mat[1][0] * mat[2][1] - mat[1][1] * mat[2][0]);
+    return ans;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void lsa_to_bar()
-{   
-    uint8_t var = 0x00;                     
-    bool number[8] = {0,0,0,0,0,0,0,0};
-    for(int i = 0; i < 4; i++)
-    {
-        number[7-i] = (line_sensor_readings.adc_reading[i] < BLACK_MARGIN) ? 0 : 1; //If adc value is less than black margin, then set that bit to 0 otherwise 1. 
-        var = bool_to_uint8(number);  //A helper function to convert bool array to unsigned int.
-        ESP_ERROR_CHECK(set_bar_graph(var)); //Setting bar graph led with unsigned int value.
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// This function finds the solution of system of
+// linear equations using cramer's rule
+
+/*
+  Function    :   findSolution()
+  Arguments   :   a 3x4 matrix with all the elements in it
+  type        :   double[][]
+  Returns     :   a an array which represents a 3x1 matrix and all the elements in order
+*/
+double* findSolution(double coeff[3][4])
+{     
+    double *ans = malloc(3*sizeof(double));
+    // Matrix d using coeff as given in cramer's rule
+    double d[3][3] = {
+        { coeff[0][0], coeff[0][1], coeff[0][2] },
+        { coeff[1][0], coeff[1][1], coeff[1][2] },
+        { coeff[2][0], coeff[2][1], coeff[2][2] },
+    };
+    // Matrix d1 using coeff as given in cramer's rule
+    double d1[3][3] = {
+        { coeff[0][3], coeff[0][1], coeff[0][2] },
+        { coeff[1][3], coeff[1][1], coeff[1][2] },
+        { coeff[2][3], coeff[2][1], coeff[2][2] },
+    };
+    // Matrix d2 using coeff as given in cramer's rule
+    double d2[3][3] = {
+        { coeff[0][0], coeff[0][3], coeff[0][2] },
+        { coeff[1][0], coeff[1][3], coeff[1][2] },
+        { coeff[2][0], coeff[2][3], coeff[2][2] },
+    };
+    // Matrix d3 using coeff as given in cramer's rule
+    double d3[3][3] = {
+        { coeff[0][0], coeff[0][1], coeff[0][3] },
+        { coeff[1][0], coeff[1][1], coeff[1][3] },
+        { coeff[2][0], coeff[2][1], coeff[2][3] },
+    };
+
+    // Calculating Determinant of Matrices d, d1, d2, d3
+    double D  = determinantOfMatrix(d) ;
+    double D1 = determinantOfMatrix(d1);
+    double D2 = determinantOfMatrix(d2);
+    double D3 = determinantOfMatrix(d3);
+
+    // Case 1
+    if (D != 0) {
+        // Coeff have a unique solution. Apply Cramer's Rule
+        double x = D1 / D;
+        double y = D2 / D;
+        double z = D3 / D; // calculating z using cramer's rule
+
+        ans[0] = x;
+        ans[1] = y;
+        ans[2] = z;
     }
-}
-
-void calculate_correction()
-{
-    error = error*10;  // we need the error correction in range 0-100 so that we can send it directly as duty cycle paramete
-    difference = error - prev_error;
-    cumulative_error += error;
-
-    cumulative_error = bound(cumulative_error, -30, 30);
-
-    correction = read_pid_const().kp*error + read_pid_const().ki*cumulative_error + read_pid_const().kd*difference;
-    prev_error = error;
-}
-
-void calculate_error()
-{
-    int all_black_flag = 1; // assuming initially all black condition
-    float weighted_sum = 0, sum = 0; 
-    float pos = 0;
+    // Case 2
+    else {
+      // this says your velocities are invalid
+        for(int i= 0;i<3;i++){
+            ans[i] = 0;
+        }
+    }
     
-    for(int i = 0; i < 4; i++)
-    {
-        if(line_sensor_readings.adc_reading[i] > BLACK_MARGIN)
-        {
-            all_black_flag = 0;
-        }
-        weighted_sum += (float)(weights[i]) * (line_sensor_readings.adc_reading[i]);
-        sum = sum + line_sensor_readings.adc_reading[i];
+    return ans; // This will give the velocity in RPM
+}
+
+/*
+  Function    :   matmul()
+  @param      :   a 3x3 matrix with all the elements in it and a 3x1 matrix
+  type        :   double[][]
+  Returns     :   resultant array with multiplied matrices
+*/
+double* matmul(double MatA[3][3], double MatB[3]){
+	double *ans = (double*)malloc(3*sizeof(double));
+
+	for(int i = 0 ; i < 3 ; i++){
+		for(int j = 0 ; j < 3 ; j++){
+			ans[i] += MatA[i][j] * MatB[j]; 
+		}
+	}
+
+	return ans;
+}
+
+
+// ############################################################################################################## //
+// ############################################################################################################## //
+
+// ################### Speed Publisher for all the motors according to the delays provided ###################### //
+
+
+/*
+    Function    :   speed_publisher()
+    Arguments   :   1. int x1 which are the delays
+                    2. int x2 which are the delays
+                    3. int x3 which are the delays
+                    4. int vel_1 which is the velocity for the wheel 1
+                    5. int vel_2 which is the velocity for the wheel 2
+                    6. int vel_3 which is the velocity for the wheel 3
+    Returns     :   Nothing - > void
+*/
+void speed_publisher(double x1, double x2, double x3, double vel_1, double vel_2, double vel_3){	// Publishes Speed according to the given body frame velocities
+
+  // Now we need to transform the velocity in rpm to the delay in microSec
+    enable_servo();
+
+    m1_timer_curr = timer();
+    m2_timer_curr = timer();
+    m3_timer_curr = timer();
+
+    if(vel_1 > 0){
+        gpio_set_level(GPIO_NUM_32 , 1); // clockwise direction 
+    }
+    else if( vel_1 <= 0){
+        gpio_set_level(GPIO_NUM_32 , 0); // anticlockwise direction
+    }
+    if(vel_2 > 0){
+        gpio_set_level(GPIO_NUM_17 , 1);
+    }
+    else if(vel_2 <= 0){
+        gpio_set_level(GPIO_NUM_17 , 0);
+    }
+    if(vel_3 > 0){
+        gpio_set_level(GPIO_NUM_27 , 1);
+    }
+    else if(vel_3 <= 0){
+        gpio_set_level(GPIO_NUM_27 , 0);
     }
 
-    if(sum != 0) // sum can never be 0 but just for safety purposes
-    {
-        pos = weighted_sum / sum; // This will give us the position wrt line. if +ve then bot is facing left and if -ve the bot is facing to right.
+  // Now, just mapping the velocities to the delays
+
+    vel_1 = modulus(vel_1);   // Direction pins are already set 
+    vel_2 = modulus(vel_2);   // Direction pins are already set 
+    vel_3 = modulus(vel_3);   // Direction pins are already set 
+  
+    x1 = (1.8/((vel_1/0.029)*(180/M_PI)))*1e6; // 2pi rad/sec takes 200 signals in one sec
+    x2 = (1.8/((vel_2/0.029)*(180/M_PI)))*1e6; // 2pi rad/sec takes 200 signals in one sec
+    x3 = (1.8/((vel_3/0.029)*(180/M_PI)))*1e6; // 2pi rad/sec takes 200 signals in one sec
+
+    if(x1 < lowest_delay){
+        x1  = lowest_delay;
+    }
+    if(x2 < lowest_delay){
+        x2  = lowest_delay;
+    }
+    if(x3 < lowest_delay){ 
+        x3  = lowest_delay;
     }
 
-    if(all_black_flag == 1)  // If all black then we check for previous error to assign current error.
+  
+  printf("x1 : %f x2 : %f and x3 : %f \n",x1, x2, x3);
+  // printf("x1 : %lld x2 : %lld and x3 : %lld\n", (motor_one_curr_time- motor_one_prev_time), (motor_two_curr_time - motor_three_prev_time), (motor_three_curr_time - motor_three_prev_time));
+  if((m1_timer_curr - m1_timer_prev) >= x1 && x1 < highest_delay){
+    m1_count++;
+    if(m1_count == 1){
+      gpio_set_level(step_pin_m1,0);
+    }
+    if(m1_count == 2){
+      gpio_set_level(step_pin_m1,1);
+      m1_count = 0;
+    }
+  }
+  if((m2_timer_curr - m2_timer_prev) >= x2 && x2 < highest_delay){ 
+    m2_count++;
+    if(m2_count == 1){
+      gpio_set_level(step_pin_m2,0);
+    }
+    if(m2_count == 2){
+      gpio_set_level(step_pin_m2,1);
+      m2_count = 0;
+    }
+  }
+  if((m3_timer_curr - m3_timer_prev) >= x3 && x3 < highest_delay){ 
+    m3_count++;
+    if(m3_count == 1){
+      gpio_set_level(step_pin_m3,0);
+    }
+    if(m3_count == 2){
+      gpio_set_level(step_pin_m3,1);
+      m3_count = 0;
+    }
+  }
+}
+
+// ######################################################################################################################### //
+// ######################################################################################################################### //
+
+
+// ######################################################################################################################### //
+// ##########################################      Main Function coming in      ############################################ //
+// ######################################################################################################################### //
+
+void stepper_task(void *arg){
+
+	gpio_config_t io_conf = {
+        .mode = GPIO_MODE_OUTPUT,
+        .intr_type = GPIO_INTR_DISABLE,
+        .pull_down_en = 0,
+        .pull_up_en = 1,
+        .pin_bit_mask = ((1ULL<<dire_pin_m1) | (1ULL<<dire_pin_m2) | (1ULL<<dire_pin_m3) | (1ULL<<step_pin_m1) | (1ULL<<step_pin_m2) | (1ULL<<step_pin_m3)),
+    };
+
+
+	esp_err_t err = gpio_config(&io_conf);
+	if (err == ESP_OK)
     {
-        if(prev_error > 0)
-        {
-            error = 2.5;
-        }
-        else
-        {
-            error = -2.5;
-        }
+        // ESP_LOGI(TAG_BAR_GRAPH, "enabled bar graph leds in mode: %d", enabled_bar_graph_flag);
+		printf("ohk!");
     }
     else
     {
-        error = pos;
+        // ESP_LOGE(TAG_BAR_GRAPH, "error: %s", esp_err_to_name(err));
+        // enabled_bar_graph_flag = 0;
+		printf("error!");
     }
-}
+  // put your main code here, to run repeatedly:
 
-void line_follow_task(void* arg)
-{
-    ESP_ERROR_CHECK(enable_motor_driver(a, NORMAL_MODE));
-    ESP_ERROR_CHECK(enable_line_sensor());
-    ESP_ERROR_CHECK(enable_bar_graph());
+	float err_x, err_y, err_theta;
 
-    for(int i= 0;i<4;i++){
-        line_sensor.adc_reading[i] = 0;
-    }
+	// Now  to know the movements let me define the velocity vectors in x,y and angular velocity vector about z-axis
+	// We will calculate the errors along them and then transform these vectors into individual velocities of the wheels
+	double vel_x, vel_y, vel_z, vel_1, vel_2, vel_3;
+	double *velocities, *vel;       // The final Velocity matrix after the allocation for each wheels
+  double errors[3];
+
+	// Rotation matrix definition just for the next gen code
+
+  current_x = read_pid_const().ki;
+  current_y = read_pid_const().kd;
+  current_theta = read_pid_const().kp;         // This is the current orientation of the bot
+  double theta;                               // The Theta is for circular trajectory
+  double  curr_time, curr_time_seconds;
+
+  m1_timer_prev = timer();
+  m2_timer_prev = timer();
+  m3_timer_prev = timer();
+
+  err_x     = goals[0][0] - current_x;
+  err_y     = goals[0][1] - current_y;   
+  err_theta = goals[0][2] - current_theta;
+  
+
+	while(1){
+
+    current_theta = read_pid_const().kp;  
+    current_x     = read_pid_const().ki;
+    current_y     = read_pid_const().kd;
     
-    while(true)
-    {
-        line_sensor_readings = read_line_sensor();
-        optimum_duty_cycle = 55;
-        lower_duty_cycle = 45;
-        higher_duty_cycle = 65;
-        //int weights[4] = {3,1,-1,-3};
+    double rotation_matrix[3][3] = {{     cos(current_theta)    ,    sin(current_theta)    , 0},\
+                                    {    -sin(current_theta)    ,    cos(current_theta)    , 0},\
+                                    {               0           ,             0            , 1}};
+    curr_time = timer();
+    
+    curr_time_seconds =  curr_time / 1000000; // As time was in microseconds
 
-        for(int i = 0; i < 4; i++)
-        {
-            line_sensor_readings.adc_reading[i] = bound(line_sensor_readings.adc_reading[i], BLACK_MARGIN, WHITE_MARGIN);
-            line_sensor_readings.adc_reading[i] = map(line_sensor_readings.adc_reading[i], BLACK_MARGIN, WHITE_MARGIN, bound_LSA_LOW, bound_LSA_HIGH);
-        } 
-        
-        check_counter();
-        if((line_sensor_readings.adc_reading[0]>700 && line_sensor_readings.adc_reading[1]>700) && line_sensor_readings.adc_reading[2]>700 )
-        { 
-            Ir();
-            if (value ==1){
-                if(counter>=15 && line_sensor.adc_reading[3] >= 700){
-
-                set_motor_speed(MOTOR_A_0, MOTOR_STOP, 0);
-                set_motor_speed(MOTOR_A_1, MOTOR_STOP, 0);
-                vTaskDelete(NULL);
-                }
-            left_duty_cycle = 68;
-            right_duty_cycle = 68;
-            set_motor_speed(MOTOR_A_0, MOTOR_BACKWARD, left_duty_cycle);
-            set_motor_speed(MOTOR_A_1, MOTOR_FORWARD, right_duty_cycle);
-            vTaskDelay( 30 / portTICK_PERIOD_MS);}
-
-            else if (value ==0)
-            {
-                left_duty_cycle = 75;
-                right_duty_cycle = 75;
-                set_motor_speed(MOTOR_A_0, MOTOR_FORWARD, left_duty_cycle);
-                set_motor_speed(MOTOR_A_1, MOTOR_FORWARD, right_duty_cycle);
-            
-            vTaskDelay( 15 / portTICK_PERIOD_MS); }
-            
-            
-        }
-        else if((line_sensor_readings.adc_reading[0]>700 && line_sensor_readings.adc_reading[3]>700) && (line_sensor_readings.adc_reading[1]<500 || line_sensor_readings.adc_reading[2]<500)){
-            for(int i = 0 ; i < 4 ; i++ ){
-                line_sensor_readings.adc_reading[i] = 1000 - line_sensor_readings.adc_reading[i];
-            }
-            line_sensor_readings.adc_reading[1] = 2*line_sensor_readings.adc_reading[1];
-            line_sensor_readings.adc_reading[2] = 2*line_sensor_readings.adc_reading[2];
-
-            if(line_sensor_readings.adc_reading[1]>1000){line_sensor_readings.adc_reading[1] = 1000;}
-            if(line_sensor_readings.adc_reading[2]>1000){line_sensor_readings.adc_reading[1] = 1000;}
-
-            calculate_error();
-            calculate_correction();
-            lsa_to_bar();
-            
-            left_duty_cycle = bound((optimum_duty_cycle - correction), lower_duty_cycle, higher_duty_cycle);
-            right_duty_cycle = bound((optimum_duty_cycle + correction), lower_duty_cycle, higher_duty_cycle);
-            set_motor_speed(MOTOR_A_0, MOTOR_FORWARD, left_duty_cycle);
-            set_motor_speed(MOTOR_A_1, MOTOR_FORWARD, right_duty_cycle);
-            
-        }
-
-        else if((line_sensor_readings.adc_reading[0]<500 && line_sensor_readings.adc_reading[1]<500) && (line_sensor_readings.adc_reading[2]<500 && line_sensor_readings.adc_reading[3]<500))
-        {
-            //U-turn
-            left_duty_cycle = 70;
-            right_duty_cycle = 70;
-            set_motor_speed(MOTOR_A_0, MOTOR_FORWARD, left_duty_cycle);
-            set_motor_speed(MOTOR_A_1, MOTOR_BACKWARD, right_duty_cycle);
-            
-            vTaskDelay( 25 / portTICK_PERIOD_MS);
-
+    if((err_x < 0.01 && err_x > -0.01) && (err_y < 0.01 && err_y > -0.01) && (err_theta < 0.005 && err_theta > -0.005)){
+      
+      if( (curr_time_seconds - prev_time) > 2){
+        if(idx <3){
+          idx++;
         }
         else{
-            //Default
-
-            calculate_error();
-            calculate_correction();
-            lsa_to_bar();
-            
-            left_duty_cycle = bound((optimum_duty_cycle - correction), lower_duty_cycle, higher_duty_cycle);
-            right_duty_cycle = bound((optimum_duty_cycle + correction), lower_duty_cycle, higher_duty_cycle);
-
-            set_motor_speed(MOTOR_A_0, MOTOR_FORWARD, left_duty_cycle);
-            set_motor_speed(MOTOR_A_1, MOTOR_FORWARD, right_duty_cycle);
-            
+          vTaskDelete(NULL);
         }
+      }
 
-        //ESP_LOGI("debug","left_duty_cycle:  %f    ::  right_duty_cycle :  %f  :: error :  %f  correction  :  %f  \n",left_duty_cycle, right_duty_cycle, error, correction);
-        ESP_LOGI("debug","L1 = %d :: L2 = %d :: L3 = %d :: L4 = %d  :: counter %d",line_sensor_readings.adc_reading[0],line_sensor_readings.adc_reading[1],line_sensor_readings.adc_reading[2],line_sensor_readings.adc_reading[3],counter);
-        //ESP_LOGI("debug", "KP: %f ::  KI: %f  :: KD: %f", read_pid_const().kp, read_pid_const().ki, read_pid_const().kd);
-
-        for(int i = 0 ;i<4;i++){
-            line_sensor.adc_reading[i] = line_sensor_readings.adc_reading[i];
-        }
-
-        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
-    vTaskDelete(NULL);
+    else{
+      prev_time = curr_time;
+    }
+    err_x     = goals[idx][0] - current_x;
+    err_y     = goals[idx][1] - current_y;   
+    err_theta = goals[idx][2] - current_theta;
+
+    errors[0] = err_x;
+    errors[1] = err_y;
+    errors[2] =   0  ;
+
+    vel = matmul(rotation_matrix, errors);
+
+    vel_x = kp_x * vel[0];  // v = k * error 
+    vel_y = kp_y * vel[1];  // v = k * error
+    vel_z = err_theta;  // equation for the circle i.e. no rotation
+
+    // Freeing the heap allotment 
+    free(vel);
+    // printf(" vel_x : %f vel_y : %f  \n", vel_x, vel_y);
+
+    double coefficients[3][4] =  {  {      1    ,     -0.5         ,     -0.5        , vel_x  },\
+                                    {      0    , 	-sqrt(3)/2     ,   sqrt(3)/2     , vel_y  },\
+                                    {     -1.0  ,      -1.0        ,     -1.0        , vel_z  }};  // The allocation matrix along with a column of the desired velocities
+    
+    velocities = findSolution(coefficients);
+
+    vel_1 = velocities[0];
+    vel_2 = velocities[1];
+    vel_3 = velocities[2];
+
+    // printf("vel_1: %f, vel_2: %f, and vel_3: %f \n", vel_1, vel_2, vel_3);
+    free(velocities);
+
+    // Now we need to publish all the velocties for the individual wheel with the help of the parameters
+    speed_publisher( x1, x2, x3, vel_1, vel_2, vel_3);
+  }
 }
 
 void app_main()
 {
-    xTaskCreate(&line_follow_task, "line_follow_task", 4096, NULL, 1, NULL);
-    start_tuning_http_server();
+	// xTaskCreate -> Create a new task and add it to the list of tasks that are ready to run
+	xTaskCreatePinnedToCore(&stepper_task, "stepper task", 8192, NULL, 1, NULL, taskCore); // Running the task on CORE0 only of the esp32
 }
