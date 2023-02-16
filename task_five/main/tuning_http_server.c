@@ -2,7 +2,7 @@
 
 static const char *TAG = "tuning_http_server";
 static char scratch[SCRATCH_BUFSIZE];
-static pid_const_t pid_constants = {.kp = 0.9, .ki = 0, .kd = 6.5, .val_changed = true};
+static pid_const_t pid_constants = {.kp = 0.9, .ki = 0, .kd = 0.5, .val_changed = true};
 
 static void initialise_mdns(void)
 {
@@ -16,7 +16,7 @@ static void initialise_mdns(void)
     };
 
     ESP_ERROR_CHECK(mdns_service_add("ESP32-WebServer", "_http", "_tcp", 80, serviceTxtData,
-                                     sizeof(serviceTxtData) / sizeof(serviceTxtData[0])));
+                                        sizeof(serviceTxtData) / sizeof(serviceTxtData[0])));
 }
 
 static esp_err_t init_fs(void)
@@ -160,16 +160,15 @@ static esp_err_t tuning_pid_post_handler(httpd_req_t *req)
         return ESP_FAIL;
     }
     
-    pid_constants.kp = (string)cJSON_GetObjectItem(root, "kp");
-    pid_constants.ki = (string)cJSON_GetObjectItem(root, "ki");
-    pid_constants.kd = (string)cJSON_GetObjectItem(root, "kd");
-    printf("%s\n %s\n %s\n",pid_constants.kp,pid_constants.ki,pid_constants.kd );
-
+    pid_constants.kp = (float)cJSON_GetObjectItem(root, "kp")->valuedouble;
+    pid_constants.ki = (float)cJSON_GetObjectItem(root, "ki")->valuedouble;
+    pid_constants.kd = (float)cJSON_GetObjectItem(root, "kd")->valuedouble;
+    // printf("x: %f y: %f theta: %f\n", pid_constants.kp, pid_constants.ki, pid_constants.kd);
     cJSON_Delete(root);
     httpd_resp_sendstr(req, "Post control value successfully");
 
     pid_constants.val_changed = true;
-    return ESP_OK;
+    return ESP_OK;
 }
 
 static esp_err_t start_tuning_http_server_private()

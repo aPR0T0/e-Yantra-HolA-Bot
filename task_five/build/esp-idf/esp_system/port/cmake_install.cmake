@@ -1,8 +1,8 @@
-# Install script for directory: D:/Espressif/frameworks/esp-idf-v4.2.3/components/esp_system/port
+# Install script for directory: /home/proto/esp/esp-idf/components/esp_system/port
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/line_following")
+  set(CMAKE_INSTALL_PREFIX "/usr/local")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -34,7 +34,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("D:/e-Yantra-HolA-Bot/task_five/build/esp-idf/esp_system/port/esp32/cmake_install.cmake")
+  include("/home/proto/catkin_ws/src/task_five/build/esp-idf/esp_system/port/soc/esp32/cmake_install.cmake")
 
 endif()
 

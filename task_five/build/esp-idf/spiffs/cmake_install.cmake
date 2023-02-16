@@ -1,8 +1,8 @@
-# Install script for directory: D:/Espressif/frameworks/esp-idf-v4.2.3/components/spiffs
+# Install script for directory: /home/proto/esp/esp-idf/components/spiffs
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/line_following")
+  set(CMAKE_INSTALL_PREFIX "/usr/local")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 

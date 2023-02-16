@@ -1,0 +1,28 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/proto/catkin_ws/devel/include/**",
+        "/home/proto/turtleBot3/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/proto/turtleBot3/src/move_tb/include/**",
+        "/home/proto/turtleBot3/src/scripts/include/**",
+        "/home/proto/catkin_ws/src/task_zero/include/**",
+        "/home/proto/turtleBot3/src/turtlebot3_fake/include/**",
+        "/home/proto/turtleBot3/src/turtlebot3_gazebo/include/**",
+        "/home/proto/catkin_ws/src/your_package_name/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

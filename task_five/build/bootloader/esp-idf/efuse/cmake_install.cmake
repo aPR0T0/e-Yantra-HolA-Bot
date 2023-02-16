@@ -1,8 +1,8 @@
-# Install script for directory: D:/Espressif/frameworks/esp-idf-v4.2.3/components/efuse
+# Install script for directory: /home/proto/esp/esp-idf/components/efuse
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/bootloader")
+  set(CMAKE_INSTALL_PREFIX "/usr/local")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 

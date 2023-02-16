@@ -18,7 +18,7 @@
 const int stepsPerRevolution = 200;
 static int taskCore = 0; // The core on which we need to run the task
 
-const int kp_x = 8000;
+const int kp_x = 1;
 const int kp_y = 1;
 const int kp_z = 1;
 
@@ -229,9 +229,10 @@ double* findSolution(double coeff[3][4])
   Returns     :   resultant array with multiplied matrices
 */
 double* matmul(double MatA[3][3], double MatB[3]){
-	double *ans = (double*)malloc(3*sizeof(double));
+	double *ans = malloc(3*sizeof(double));
 
 	for(int i = 0 ; i < 3 ; i++){
+    ans[i] = 0;
 		for(int j = 0 ; j < 3 ; j++){
 			ans[i] += MatA[i][j] * MatB[j]; 
 		}
@@ -260,7 +261,7 @@ double* matmul(double MatA[3][3], double MatB[3]){
 void speed_publisher(double x1, double x2, double x3, double vel_1, double vel_2, double vel_3){	// Publishes Speed according to the given body frame velocities
 
   // Now we need to transform the velocity in rpm to the delay in microSec
-    enable_servo();
+    // enable_servo();
 
     m1_timer_curr = timer();
     m2_timer_curr = timer();
@@ -379,13 +380,13 @@ void stepper_task(void *arg){
 	// We will calculate the errors along them and then transform these vectors into individual velocities of the wheels
 	double vel_x, vel_y, vel_z, vel_1, vel_2, vel_3;
 	double *velocities, *vel;       // The final Velocity matrix after the allocation for each wheels
-  double errors[3];
 
 	// Rotation matrix definition just for the next gen code
 
-  current_x = read_pid_const().ki;
-  current_y = read_pid_const().kd;
+  current_x     = read_pid_const().ki;
+  current_y     = read_pid_const().kd;
   current_theta = read_pid_const().kp;         // This is the current orientation of the bot
+
   double theta;                               // The Theta is for circular trajectory
   double  curr_time, curr_time_seconds;
 
@@ -400,10 +401,11 @@ void stepper_task(void *arg){
 
 	while(1){
 
-    current_theta = read_pid_const().kp;  
-    current_x     = read_pid_const().ki;
-    current_y     = read_pid_const().kd;
-    
+    current_x     = read_pid_const().kp;
+    current_y     = read_pid_const().ki;
+    current_theta = read_pid_const().kd;  
+    // printf("x: %f y: %f theta: %f\n", current_x, current_y, current_theta);
+    current_theta = 0.5;
     double rotation_matrix[3][3] = {{     cos(current_theta)    ,    sin(current_theta)    , 0},\
                                     {    -sin(current_theta)    ,    cos(current_theta)    , 0},\
                                     {               0           ,             0            , 1}};
@@ -426,20 +428,20 @@ void stepper_task(void *arg){
     else{
       prev_time = curr_time;
     }
-    err_x     = goals[idx][0] - current_x;
-    err_y     = goals[idx][1] - current_y;   
-    err_theta = goals[idx][2] - current_theta;
 
-    errors[0] = err_x;
-    errors[1] = err_y;
-    errors[2] =   0  ;
+    err_x     = goals[idx][0] - current_x    ;
+    err_y     = goals[idx][1] - current_y    ;   
+    err_theta = goals[idx][2] - current_theta;
+    double errors[3]  =  {0.5,0.5,0.5};
 
     vel = matmul(rotation_matrix, errors);
 
     vel_x = kp_x * vel[0];  // v = k * error 
     vel_y = kp_y * vel[1];  // v = k * error
     vel_z = err_theta;  // equation for the circle i.e. no rotation
+    // printf("error[0] : %f, error[1] : %f, error[2] : %f\n", errors[0], errors[1], errors[2]);
 
+    // printf("vel[0]  : %f, vel[1] : %f\n", vel[0], vel[1]);
     // Freeing the heap allotment 
     free(vel);
     // printf(" vel_x : %f vel_y : %f  \n", vel_x, vel_y);
@@ -466,4 +468,6 @@ void app_main()
 {
 	// xTaskCreate -> Create a new task and add it to the list of tasks that are ready to run
 	xTaskCreatePinnedToCore(&stepper_task, "stepper task", 8192, NULL, 1, NULL, taskCore); // Running the task on CORE0 only of the esp32
+  start_tuning_http_server();
+  
 }

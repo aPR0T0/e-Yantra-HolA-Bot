@@ -1,30 +1,4 @@
 #!/usr/bin/env python3
-
-'''
-*******************************
-*
-*        		===============================================
-*           		    HolA Bot (HB) Theme (eYRC 2022-23)
-*        		===============================================
-*
-*  This script should be used to implement Task 0 of HolA Bot (HB) Theme (eYRC 2022-23).
-*
-*  This software is made available on an "AS IS WHERE IS BASIS".
-*  Licensee/end user indemnifies and will keep e-Yantra indemnified from
-*  any and all claim(s) that emanate from the use of the Software or
-*  breach of the terms of this agreement.
-*
-*******************************
-'''
-
-# Team ID:		[ Team-ID ]
-# Author List:		[ Names of team members worked on this file separated by Comma: Name1, Name2, ... ]
-# Filename:		feedback.py
-# Functions:
-#			[ Comma separated list of functions in this file ]
-# Nodes:		Add your publishing and subscribing node
-
-
 ######################## IMPORT MODULES ##########################
 
 import numpy				# If you find it required
@@ -49,7 +23,7 @@ count = 0
 cor_x = 0
 cor_y = 0
 def callback(data):
-    	# Bridge is Used to Convert ROS Image message to OpenCV image
+	# Bridge is Used to Convert ROS Image message to OpenCV image
 	br = CvBridge()
 	rospy.loginfo("receiving camera frame")
 	get_frame = br.imgmsg_to_cv2(data, desired_encoding='bgr8')		# Receiving raw image in a "grayscale" format
@@ -58,28 +32,77 @@ def callback(data):
 	arucoParams = cv2.aruco.DetectorParameters_create()
 	(corners, ids, rejected) = cv2.aruco.detectMarkers(current_frame, arucoDict,parameters=arucoParams)
 	# print(corners, ids, rejected)
-	global cx_sum , cy_sum, dist_x, dist_y, cor_x, cor_y
+	global cx_sum , cy_sum, dist_x, dist_y, cor_x, cor_y, theta
 
 	
 	cx_sum = 0
 	cy_sum = 0
 	dist_x = 0
+	theta  = 0
 	dist_y = 0
 	if len(corners) > 0:
         # flatten the ArUco IDs list
 		ids = ids.flatten()
 
 		print(ids)
+		
+		if((0 in ids) and (1 in ids) and (2 in ids) and (4 in ids) ):
+			(topLeft_0, topRight_0, bottomRight_0, bottomLeft_0) = corners[numpy.where(ids==0)[0][0]][0][0],corners[numpy.where(ids==0)[0][0]][0][1],corners[numpy.where(ids==0)[0][0]][0][2],corners[numpy.where(ids==0)[0][0]][0][3]
+			topRight_0 = (int(topRight_0[0])   , int(topRight_0[1]))
+			bottomRight_0 = (int(bottomRight_0[0]), int(bottomRight_0[1]))
+			bottomLeft_0  = (int(bottomLeft_0[0]) , int(bottomLeft_0[1]))
+			topLeft_0     = (int(topLeft_0[0])    , int(topLeft_0[1]))
+			cX_0 = int((topLeft_0[0] + bottomRight_0[0]) / 2.0) 
+			cY_0 = int((topLeft_0[1] + bottomRight_0[1]) / 2.0)
+			#####################
+			(topLeft_1, topRight_1, bottomRight_1, bottomLeft_1) = corners[numpy.where(ids==1)[0][0]][0][0],corners[numpy.where(ids==1)[0][0]][0][1],corners[numpy.where(ids==1)[0][0]][0][2],corners[numpy.where(ids==1)[0][0]][0][3]
+			topRight_1    = (int(topRight_1[0])   , int(topRight_1[1]))
+			bottomRight_1 = (int(bottomRight_1[0]), int(bottomRight_1[1]))
+			bottomLeft_1  = (int(bottomLeft_1[0]) , int(bottomLeft_1[1]))
+			topLeft_1     = (int(topLeft_1[0])    , int(topLeft_1[1]))
+			cX_1 = int((topLeft_1[0] + bottomRight_1[0]) / 2.0)
+			cY_1 = int((topLeft_1[1] + bottomRight_1[1]) / 2.0)
+			cv2.line(current_frame,(cX_0, cY_0) ,(cX_1, cY_1), (0, 255, 0), 2)
+			########################
+			(topLeft_2, topRight_2, bottomRight_2, bottomLeft_2) = corners[numpy.where(ids==2)[0][0]][0][0],corners[numpy.where(ids==2)[0][0]][0][1],corners[numpy.where(ids==2)[0][0]][0][2],corners[numpy.where(ids==2)[0][0]][0][3]
+			topRight_2    = (int(topRight_2[0])   , int(topRight_2[1]))
+			bottomRight_2 = (int(bottomRight_2[0]), int(bottomRight_2[1]))
+			bottomLeft_2  = (int(bottomLeft_2[0]) , int(bottomLeft_2[1]))
+			topLeft_2     = (int(topLeft_2[0])    , int(topLeft_2[1]))
+			cX_2 = int((topLeft_2[0] + bottomRight_2[0]) / 2.0)
+			cY_2 = int((topLeft_2[1] + bottomRight_2[1]) / 2.0)
+			cv2.line(current_frame,(cX_0, cY_0) ,(cX_2, cY_2), (0, 255, 0), 2)
+			#################################
+			(topLeft_4, topRight_4, bottomRight_4, bottomLeft_4) = corners[numpy.where(ids==4)[0][0]][0][0],corners[numpy.where(ids==4)[0][0]][0][1],corners[numpy.where(ids==4)[0][0]][0][2],corners[numpy.where(ids==4)[0][0]][0][3]
+			topRight_4 = (int(topRight_4[0])   , int(topRight_4[1]))
+			bottomRight_4 = (int(bottomRight_4[0]), int(bottomRight_4[1]))
+			bottomLeft_4  = (int(bottomLeft_4[0]) , int(bottomLeft_4[1]))
+			topLeft_4     = (int(topLeft_4[0])    , int(topLeft_4[1]))
+			cX_4 = int((topLeft_4[0] + bottomRight_4[0]) / 2.0)
+			cY_4 = int((topLeft_4[1] + bottomRight_4[1]) / 2.0)
+			
+			
+
+			############################### line and intersection ####################################
+			
+			val_y = ((cX_4 - cX_0)*(cX_1-cX_0) + (cY_1-cY_0) * (cY_4- cY_0))/(((cX_1-cX_0)**2 + (cY_1-cY_0)**2)**0.5)
+			val_x = ((cX_4 - cX_0)*(cX_2-cX_0) + (cY_2-cY_0) * (cY_4- cY_0))/(((cX_2-cX_0)**2 + (cY_2-cY_0)**2)**0.5)
+
+			print(val_y, val_x)
+			cv2.line(current_frame,(cX_0, cY_0) ,(int(cX_0+val_x),  int(cY_0 - val_y)), (0, 255, 0), 2)
+			cv2.line(current_frame,(cX_0, cY_0) ,(cX_0,  cY_0 ), (0, 255, 0), 2)
+			
 
 		if((0 in ids) and (1 in ids) and (2 in ids) and (3 in ids) and (4 in ids)):
+			
 			for i in range(4):
 				
 				(topLeft, topRight, bottomRight, bottomLeft) = corners[i][0][0],corners[i][0][1],corners[i][0][2],corners[i][0][3]
 				
-				topRight = (int(topRight[0]), int(topRight[1]))
+				topRight    = (int(topRight[0])   , int(topRight[1]))
 				bottomRight = (int(bottomRight[0]), int(bottomRight[1]))
-				bottomLeft = (int(bottomLeft[0]), int(bottomLeft[1]))
-				topLeft = (int(topLeft[0]), int(topLeft[1]))
+				bottomLeft  = (int(bottomLeft[0]) , int(bottomLeft[1]))
+				topLeft     = (int(topLeft[0])    , int(topLeft[1]))
 				
 				cv2.line(current_frame, topLeft, topRight, (0, 255, 0), 2)
 				cv2.line(current_frame, topRight, bottomRight, (0, 255, 0), 2)
@@ -96,15 +119,17 @@ def callback(data):
 				cor_x = cx_sum
 				cor_y = cy_sum
 				if(ids[i] == 4 and cor_x > 0 and cor_y>0):
-					dist_x  = cX - cor_x
+					theta = math.atan2((topLeft[0]-topRight[0]),(topLeft[1]-topRight[1]))
+					dist_x = cX - cor_x
 					dist_y = cY - cor_y
-			# string_arr = numpy.array_str(rvecs)
-			# pload = {"kp":string_arr,"ki":"jyfujfy","kd":"hghgf"}
-			# print(json.dumps(pload))
-			# r = requests.post('http://192.168.154.50/api/v1/pid', json.dumps(pload));
-			# r_dictionary= r
-			# print(r_dictionary)
+
 			print("distx:", dist_x, 'disty:', dist_y)
+			# string_arr = numpy.array_str(rvecs)
+			#pload = {"kp":float(dist_x),"ki":float(dist_y),"kd":float(theta)}
+			#print(json.dumps(pload))
+			#r = requests.post('http://192.168.96.49/api/v1/pid', json.dumps(pload));
+			#r_dictionary= r
+			#print(r_dictionary)
 	cv2.imshow("output", current_frame)
 	cv2.waitKey(3)
 	############ ADD YOUR CODE HERE ############
@@ -122,7 +147,6 @@ def callback(data):
 def main():
 	rospy.init_node('aruco_feedback_node')  
 	rospy.Subscriber('usb_cam/image_raw', Image, callback)
-	#callback()
 	rospy.spin()
   
 if __name__ == '__main__':
