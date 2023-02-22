@@ -129,7 +129,7 @@ double modulus(double z){
   if(z<0){
     z = -z;
   }
-  return z; 
+  return z;
 
 }
 ///////////////////////////////////////////////////////////////////////
@@ -141,7 +141,7 @@ double modulus(double z){
   Function    :   determinantOfMatrix()
   Arguments   :   a 3x3 matrix with all the elements in it
   type        :   double[][]
-  Returns     :   Determinant of the given 2d matrix 
+  Returns     :   Determinant of the given 2d matrix
 */
 
 double determinantOfMatrix(double mat[3][3])
@@ -167,7 +167,7 @@ double determinantOfMatrix(double mat[3][3])
   Returns     :   a an array which represents a 3x1 matrix and all the elements in order
 */
 double* findSolution(double coeff[3][4])
-{     
+{
     double *ans = malloc(3*sizeof(double));
     // Matrix d using coeff as given in cramer's rule
     double d[3][3] = {
@@ -218,7 +218,7 @@ double* findSolution(double coeff[3][4])
             ans[i] = 0;
         }
     }
-    
+
     return ans; // This will give the velocity in RPM
 }
 
@@ -234,7 +234,7 @@ double* matmul(double MatA[3][3], double MatB[3]){
 	for(int i = 0 ; i < 3 ; i++){
     ans[i] = 0;
 		for(int j = 0 ; j < 3 ; j++){
-			ans[i] += MatA[i][j] * MatB[j]; 
+			ans[i] += MatA[i][j] * MatB[j];
 		}
 	}
 
@@ -268,7 +268,7 @@ void speed_publisher(double x1, double x2, double x3, double vel_1, double vel_2
     m3_timer_curr = timer();
 
     if(vel_1 > 0){
-        gpio_set_level(GPIO_NUM_32 , 1); // clockwise direction 
+        gpio_set_level(GPIO_NUM_32 , 1); // clockwise direction
     }
     else if( vel_1 <= 0){
         gpio_set_level(GPIO_NUM_32 , 0); // anticlockwise direction
@@ -288,10 +288,10 @@ void speed_publisher(double x1, double x2, double x3, double vel_1, double vel_2
 
   // Now, just mapping the velocities to the delays
 
-    vel_1 = modulus(vel_1);   // Direction pins are already set 
-    vel_2 = modulus(vel_2);   // Direction pins are already set 
-    vel_3 = modulus(vel_3);   // Direction pins are already set 
-  
+    vel_1 = modulus(vel_1);   // Direction pins are already set
+    vel_2 = modulus(vel_2);   // Direction pins are already set
+    vel_3 = modulus(vel_3);   // Direction pins are already set
+
     x1 = (1.8/((vel_1/0.029)*(180/M_PI)))*1e6; // 2pi rad/sec takes 200 signals in one sec
     x2 = (1.8/((vel_2/0.029)*(180/M_PI)))*1e6; // 2pi rad/sec takes 200 signals in one sec
     x3 = (1.8/((vel_3/0.029)*(180/M_PI)))*1e6; // 2pi rad/sec takes 200 signals in one sec
@@ -302,12 +302,12 @@ void speed_publisher(double x1, double x2, double x3, double vel_1, double vel_2
     if(x2 < lowest_delay){
         x2  = lowest_delay;
     }
-    if(x3 < lowest_delay){ 
+    if(x3 < lowest_delay){
         x3  = lowest_delay;
     }
 
-  
-  printf("x1 : %f x2 : %f and x3 : %f \n",x1, x2, x3);
+
+  // printf("x1 : %f x2 : %f and x3 : %f \n",x1, x2, x3);
   // printf("x1 : %lld x2 : %lld and x3 : %lld\n", (motor_one_curr_time- motor_one_prev_time), (motor_two_curr_time - motor_three_prev_time), (motor_three_curr_time - motor_three_prev_time));
   if((m1_timer_curr - m1_timer_prev) >= x1 && x1 < highest_delay){
     m1_count++;
@@ -319,7 +319,7 @@ void speed_publisher(double x1, double x2, double x3, double vel_1, double vel_2
       m1_count = 0;
     }
   }
-  if((m2_timer_curr - m2_timer_prev) >= x2 && x2 < highest_delay){ 
+  if((m2_timer_curr - m2_timer_prev) >= x2 && x2 < highest_delay){
     m2_count++;
     if(m2_count == 1){
       gpio_set_level(step_pin_m2,0);
@@ -329,7 +329,7 @@ void speed_publisher(double x1, double x2, double x3, double vel_1, double vel_2
       m2_count = 0;
     }
   }
-  if((m3_timer_curr - m3_timer_prev) >= x3 && x3 < highest_delay){ 
+  if((m3_timer_curr - m3_timer_prev) >= x3 && x3 < highest_delay){
     m3_count++;
     if(m3_count == 1){
       gpio_set_level(step_pin_m3,0);
@@ -395,30 +395,30 @@ void stepper_task(void *arg){
   m3_timer_prev = timer();
 
   err_x     = goals[0][0] - current_x;
-  err_y     = goals[0][1] - current_y;   
+  err_y     = goals[0][1] - current_y;
   err_theta = goals[0][2] - current_theta;
-  
+
 
 	while(1){
 
     current_x     = read_pid_const().ki;
     current_y     = read_pid_const().kp;
-    current_theta = read_pid_const().kd;  
+    current_theta = read_pid_const().kd;
     // printf("x: %f y: %f theta: %f\n", current_x, current_y, current_theta);
     double rotation_matrix[3][3] = {{     cos(current_theta)    ,    sin(current_theta)    , 0},\
                                     {    -sin(current_theta)    ,    cos(current_theta)    , 0},\
                                     {               0           ,             0            , 1}};
     curr_time = timer();
-    
+
     curr_time_seconds =  curr_time / 1000000; // As time was in microseconds
 
     err_x     = goals[idx][0] - current_x    ;
-    err_y     = goals[idx][1] - current_y    ;   
+    err_y     = goals[idx][1] - current_y    ;
     err_theta = goals[idx][2] - current_theta;
     double errors[3]  =  {err_x,err_y,0};
 
     if((err_x < 5 && err_x > -5) && (err_y < 5 && err_y > -5) && (err_theta < 0.1 && err_theta > -0.1)){
-      
+
       if( (curr_time_seconds - prev_time) > 2){
         if(idx <3){
           idx++;
@@ -434,28 +434,27 @@ void stepper_task(void *arg){
     }
 
     vel = matmul(rotation_matrix, errors);
-
-    vel_x = kp_x * vel[0];  // v = k * error 
+    vel_x = kp_x * vel[0];  // v = k * error
     vel_y = kp_y * vel[1];  // v = k * error
-    vel_z = err_theta;  // equation for the circle i.e. no rotation
+    vel_z = kp_z * vel[2];  // equation for the circle i.e. no rotation
     // printf("error[0] : %f, error[1] : %f, error[2] : %f\n", errors[0], errors[1], errors[2]);
 
     // printf("vel[0]  : %f, vel[1] : %f\n", vel[0], vel[1]);
-    // Freeing the heap allotment 
+    // Freeing the heap allotment
     free(vel);
     // printf(" vel_x : %f vel_y : %f  \n", vel_x, vel_y);
 
     double coefficients[3][4] =  {  {      1    ,     -0.5         ,     -0.5        , vel_x  },\
                                     {      0    , 	-sqrt(3)/2     ,   sqrt(3)/2     , vel_y  },\
                                     {     -1.0  ,      -1.0        ,     -1.0        , vel_z  }};  // The allocation matrix along with a column of the desired velocities
-    
+
     velocities = findSolution(coefficients);
 
     vel_1 = velocities[0];
     vel_2 = velocities[1];
     vel_3 = velocities[2];
 
-    // printf("vel_1: %f, vel_2: %f, and vel_3: %f \n", vel_1, vel_2, vel_3);
+    printf("vel_1: %f, vel_2: %f, and vel_3: %f \n", vel_1, vel_2, vel_3);
     free(velocities);
 
     // Now we need to publish all the velocties for the individual wheel with the help of the parameters
@@ -468,5 +467,5 @@ void app_main()
 	// xTaskCreate -> Create a new task and add it to the list of tasks that are ready to run
 	xTaskCreatePinnedToCore(&stepper_task, "stepper task", 8192, NULL, 1, NULL, taskCore); // Running the task on CORE0 only of the esp32
   start_tuning_http_server();
-  
+
 }
