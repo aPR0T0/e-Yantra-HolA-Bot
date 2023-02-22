@@ -18,9 +18,9 @@
 const int stepsPerRevolution = 200;
 static int taskCore = 0; // The core on which we need to run the task
 
-const int kp_x = 1;
-const int kp_y = 1;
-const int kp_z = 1;
+const int kp_x = 0.01;
+const int kp_y = 0.01;
+const int kp_z = 0.01;
 
 // Getting current position and orientation
 float current_x, current_y, current_theta;
@@ -401,11 +401,10 @@ void stepper_task(void *arg){
 
 	while(1){
 
-    current_x     = read_pid_const().kp;
-    current_y     = read_pid_const().ki;
+    current_x     = read_pid_const().ki;
+    current_y     = read_pid_const().kp;
     current_theta = read_pid_const().kd;  
     // printf("x: %f y: %f theta: %f\n", current_x, current_y, current_theta);
-    current_theta = 0.5;
     double rotation_matrix[3][3] = {{     cos(current_theta)    ,    sin(current_theta)    , 0},\
                                     {    -sin(current_theta)    ,    cos(current_theta)    , 0},\
                                     {               0           ,             0            , 1}};
@@ -413,7 +412,12 @@ void stepper_task(void *arg){
     
     curr_time_seconds =  curr_time / 1000000; // As time was in microseconds
 
-    if((err_x < 0.01 && err_x > -0.01) && (err_y < 0.01 && err_y > -0.01) && (err_theta < 0.005 && err_theta > -0.005)){
+    err_x     = goals[idx][0] - current_x    ;
+    err_y     = goals[idx][1] - current_y    ;   
+    err_theta = goals[idx][2] - current_theta;
+    double errors[3]  =  {err_x,err_y,0};
+
+    if((err_x < 5 && err_x > -5) && (err_y < 5 && err_y > -5) && (err_theta < 0.1 && err_theta > -0.1)){
       
       if( (curr_time_seconds - prev_time) > 2){
         if(idx <3){
@@ -428,11 +432,6 @@ void stepper_task(void *arg){
     else{
       prev_time = curr_time;
     }
-
-    err_x     = goals[idx][0] - current_x    ;
-    err_y     = goals[idx][1] - current_y    ;   
-    err_theta = goals[idx][2] - current_theta;
-    double errors[3]  =  {0.5,0.5,0.5};
 
     vel = matmul(rotation_matrix, errors);
 

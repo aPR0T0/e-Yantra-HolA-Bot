@@ -163,7 +163,9 @@ static esp_err_t tuning_pid_post_handler(httpd_req_t *req)
     pid_constants.kp = (float)cJSON_GetObjectItem(root, "kp")->valuedouble;
     pid_constants.ki = (float)cJSON_GetObjectItem(root, "ki")->valuedouble;
     pid_constants.kd = (float)cJSON_GetObjectItem(root, "kd")->valuedouble;
-    // printf("x: %f y: %f theta: %f\n", pid_constants.kp, pid_constants.ki, pid_constants.kd);
+
+    // printf("cx: %f, cy: %f, theta: %f\n", pid_constants.kp, pid_constants.ki, pid_constants.kd);
+
     cJSON_Delete(root);
     httpd_resp_sendstr(req, "Post control value successfully");
 
