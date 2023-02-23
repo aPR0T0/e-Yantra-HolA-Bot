@@ -88,7 +88,7 @@ def callback(data):
             orientation = math.atan2(-(topLeft_4[0] -
                                      topRight_4[0]), -(topLeft_4[1]-topRight_4[1]))
 
-            ############################### line and intersection ####################################
+            ####### current_frame######################## line and intersection ####################################
 
             val_x = ((cX_4 - cX_0)*(cX_1-cX_0) + (cY_1-cY_0) *
                      (cY_4 - cY_0))/(((cX_1-cX_0)**2 + (cY_1-cY_0)**2)**0.5)
@@ -114,7 +114,7 @@ def callback(data):
                     val_x), "kd": float(orientation)}
                 print(json.dumps(pload))
                 r = requests.post(
-                    'http://192.168.41.49/api/v1/pid', json.dumps(pload))
+                    'http://192.168.0.222/api/v1/pid', json.dumps(pload))
                 r_dictionary = r
                 print(r_dictionary)
             except:

@@ -18,9 +18,9 @@
 const int stepsPerRevolution = 200;
 static int taskCore = 0; // The core on which we need to run the task
 
-const int kp_x = 0.01;
-const int kp_y = 0.01;
-const int kp_z = 0.01;
+const float kp_x = 0.01;
+const float kp_y = 0.01;
+const float kp_z = 0.01;
 
 // Getting current position and orientation
 float current_x, current_y, current_theta;
@@ -307,7 +307,7 @@ void speed_publisher(double x1, double x2, double x3, double vel_1, double vel_2
     }
 
 
-  // printf("x1 : %f x2 : %f and x3 : %f \n",x1, x2, x3);
+  printf("x1 : %f x2 : %f and x3 : %f \n",x1, x2, x3);
   // printf("x1 : %lld x2 : %lld and x3 : %lld\n", (motor_one_curr_time- motor_one_prev_time), (motor_two_curr_time - motor_three_prev_time), (motor_three_curr_time - motor_three_prev_time));
   if((m1_timer_curr - m1_timer_prev) >= x1 && x1 < highest_delay){
     m1_count++;
@@ -415,7 +415,8 @@ void stepper_task(void *arg){
     err_x     = goals[idx][0] - current_x    ;
     err_y     = goals[idx][1] - current_y    ;
     err_theta = goals[idx][2] - current_theta;
-    double errors[3]  =  {err_x,err_y,0};
+
+    double errors[3]  =  {err_x,err_y,err_theta};
 
     if((err_x < 5 && err_x > -5) && (err_y < 5 && err_y > -5) && (err_theta < 0.1 && err_theta > -0.1)){
 
@@ -436,7 +437,7 @@ void stepper_task(void *arg){
     vel = matmul(rotation_matrix, errors);
     vel_x = kp_x * vel[0];  // v = k * error
     vel_y = kp_y * vel[1];  // v = k * error
-    vel_z = kp_z * vel[2];  // equation for the circle i.e. no rotation
+    vel_z = kp_z * err_theta;  // equation for the circle i.e. no rotation
     // printf("error[0] : %f, error[1] : %f, error[2] : %f\n", errors[0], errors[1], errors[2]);
 
     // printf("vel[0]  : %f, vel[1] : %f\n", vel[0], vel[1]);
@@ -454,7 +455,7 @@ void stepper_task(void *arg){
     vel_2 = velocities[1];
     vel_3 = velocities[2];
 
-    printf("vel_1: %f, vel_2: %f, and vel_3: %f \n", vel_1, vel_2, vel_3);
+    // printf("vel_1: %f, vel_2: %f, and vel_3: %f \n", vel_1, vel_2, vel_3);
     free(velocities);
 
     // Now we need to publish all the velocties for the individual wheel with the help of the parameters
