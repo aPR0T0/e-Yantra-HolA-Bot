@@ -1,4 +1,4 @@
-# Install script for directory: /home/proto/esp/esp-idf/components/mbedtls/mbedtls
+# Install script for directory: /home/sameergupta/esp/esp-idf/components/mbedtls/mbedtls
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -34,9 +34,9 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/proto/catkin_ws/src/task_five/build/esp-idf/mbedtls/mbedtls/include/cmake_install.cmake")
-  include("/home/proto/catkin_ws/src/task_five/build/esp-idf/mbedtls/mbedtls/3rdparty/cmake_install.cmake")
-  include("/home/proto/catkin_ws/src/task_five/build/esp-idf/mbedtls/mbedtls/library/cmake_install.cmake")
+  include("/home/sameergupta/e-Yantra-HolA-Bot/task_five/build/esp-idf/mbedtls/mbedtls/include/cmake_install.cmake")
+  include("/home/sameergupta/e-Yantra-HolA-Bot/task_five/build/esp-idf/mbedtls/mbedtls/3rdparty/cmake_install.cmake")
+  include("/home/sameergupta/e-Yantra-HolA-Bot/task_five/build/esp-idf/mbedtls/mbedtls/library/cmake_install.cmake")
 
 endif()
 

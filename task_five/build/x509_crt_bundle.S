@@ -1,4 +1,4 @@
-/* * Data converted from /home/proto/catkin_ws/src/task_five/build/esp-idf/mbedtls/x509_crt_bundle
+/* * Data converted from /home/sameergupta/e-Yantra-HolA-Bot/task_five/build/esp-idf/mbedtls/x509_crt_bundle
  */
 .data
 .section .rodata.embedded

@@ -1,4 +1,4 @@
-# Install script for directory: /home/proto/catkin_ws/src/components/sra-board-component
+# Install script for directory: /home/sameergupta/e-Yantra-HolA-Bot/components/sra-board-component
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
