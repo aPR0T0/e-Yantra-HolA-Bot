@@ -674,8 +674,6 @@
 /home/proto/catkin_ws/src/task_five/build/esp-idf/main/CMakeFiles/install.dir
 /home/proto/catkin_ws/src/task_five/build/esp-idf/main/CMakeFiles/list_install_components.dir
 /home/proto/catkin_ws/src/task_five/build/esp-idf/main/CMakeFiles/rebuild_cache.dir
-/home/proto/catkin_ws/src/task_five/build/esp-idf/main/CMakeFiles/encrypted-www-flash.dir
-/home/proto/catkin_ws/src/task_five/build/esp-idf/main/CMakeFiles/www-flash.dir
 /home/proto/catkin_ws/src/task_five/build/esp-idf/main/CMakeFiles/edit_cache.dir
 /home/proto/catkin_ws/src/task_five/build/esp-idf/main/CMakeFiles/spiffs_www_bin.dir
 /home/proto/catkin_ws/src/task_five/build/esp-idf/main/CMakeFiles/__idf_main.dir

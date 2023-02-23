@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 2.7.18)
 project(your_package_name)
 
 
@@ -21,7 +21,7 @@ find_package(catkin REQUIRED)
 find_package(roslaunch)
 
 ##### INCLUDE #####
-include_directories( include ${catkin_INCLUDE_DIRS})
+include_directories( i  nclude ${catkin_INCLUDE_DIRS})
 
 
 find_package(gazebo REQUIRED)
