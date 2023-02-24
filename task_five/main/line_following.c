@@ -29,7 +29,7 @@ const float angular_velocity = 0.5; // rad/sec -> vel_x, vel_y = s/R
 const float radius = 0.8; // Increase this only when u need a larger radius
 
 #define highest_delay  20000
-#define lowest_delay  850
+#define lowest_delay  500
 
 #define highest_speed  0.67
 #define lowest_speed  0
@@ -258,7 +258,7 @@ double* matmul(double MatA[3][3], double MatB[3]){
                     6. int vel_3 which is the velocity for the wheel 3
     Returns     :   Nothing - > void
 */
-void speed_publisher(double x1, double x2, double x3, double vel_1, double vel_2, double vel_3){	// Publishes Speed according to the given body frame velocities
+void  speed_publisher(double x1, double x2, double x3, double vel_1, double vel_2, double vel_3){	// Publishes Speed according to the given body frame velocities
 
   // Now we need to transform the velocity in rpm to the delay in microSec
     // enable_servo();
@@ -401,8 +401,8 @@ void stepper_task(void *arg){
 
 	while(1){
 
-    current_x     = read_pid_const().ki;
-    current_y     = read_pid_const().kp;
+    current_x     = read_pid_const().kp;
+    current_y     = read_pid_const().ki;
     current_theta = read_pid_const().kd;
     // printf("x: %f y: %f theta: %f\n", current_x, current_y, current_theta);
     double rotation_matrix[3][3] = {{     cos(current_theta)    ,    sin(current_theta)    , 0},\
@@ -418,20 +418,23 @@ void stepper_task(void *arg){
 
     double errors[3]  =  {err_x,err_y,err_theta};
 
-    if((err_x < 5 && err_x > -5) && (err_y < 5 && err_y > -5) && (err_theta < 0.1 && err_theta > -0.1)){
+    if((err_x < 5 && err_x > -5) && (err_y < 5 && err_y > -5)){
 
+      printf("Stop_timer = %f\n",( curr_time_seconds- prev_time));
       if( (curr_time_seconds - prev_time) > 2){
+
         if(idx <3){
           idx++;
+          printf("new waypoints : goalx %f, goaly %f, and goalz %f \n", goals[idx][0],goals[idx][1], goals[idx][2] );
         }
         else{
           vTaskDelete(NULL);
         }
       }
-
     }
+
     else{
-      prev_time = curr_time;
+      prev_time = curr_time_seconds; // This was the mistake
     }
 
     vel = matmul(rotation_matrix, errors);

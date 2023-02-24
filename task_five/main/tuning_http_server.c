@@ -2,7 +2,7 @@
 
 static const char *TAG = "tuning_http_server";
 static char scratch[SCRATCH_BUFSIZE];
-static pid_const_t pid_constants = {.kp = 0.9, .ki = 0, .kd = 0.0, .val_changed = true};
+static pid_const_t pid_constants = {.kp = 250, .ki = 250, .kd = 0, .val_changed = true};
 
 static void initialise_mdns(void)
 {

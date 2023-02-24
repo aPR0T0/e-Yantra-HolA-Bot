@@ -16,7 +16,7 @@ roslaunch usb_cam_stream_publisher.launch video_device:=/dev/video0 image_width:
 <param name="image_width" value="$(arg image_width)" />
 <param name="image_height" value="$(arg image_height)"/>
 <param name="pixel_format" value="yuyv" />
-<param name="io_method" value="mmap"/>detected_img
+<param name="io_method" value="mmap"/>
 
 <!-- update these line accroding to your setting, here are some examples:--> 
 <!-- <param name="camera_info_url" value="package://your_cameras/info/camera.yaml"/> -->
