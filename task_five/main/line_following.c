@@ -307,7 +307,7 @@ void  speed_publisher(double x1, double x2, double x3, double vel_1, double vel_
     }
 
 
-  printf("x1 : %f x2 : %f and x3 : %f \n",x1, x2, x3);
+  // printf("x1 : %f x2 : %f and x3 : %f \n",x1, x2, x3);
   // printf("x1 : %lld x2 : %lld and x3 : %lld\n", (motor_one_curr_time- motor_one_prev_time), (motor_two_curr_time - motor_three_prev_time), (motor_three_curr_time - motor_three_prev_time));
   if((m1_timer_curr - m1_timer_prev) >= x1 && x1 < highest_delay){
     m1_count++;
@@ -414,23 +414,28 @@ void stepper_task(void *arg){
 
     err_x     = goals[idx][0] - current_x    ;
     err_y     = goals[idx][1] - current_y    ;
-    err_theta = goals[idx][2] - current_theta;
+    if (current_theta >= 0){
+      err_theta = goals[idx][2] - current_theta ;
+    }
+    else{
+      err_theta = goals[idx][2] - (2*M_PI + current_theta) ;
+    }
+
+    printf("Errrors %f, %f, %f : \n", err_x, err_y, err_theta);
 
     double errors[3]  =  {err_x,err_y,err_theta};
 
-    if((err_x < 5 && err_x > -5) && (err_y < 5 && err_y > -5)){
+    if((err_x < 5 && err_x > -5) && (err_y < 5 && err_y > -5) && (err_theta > -0.08 && err_theta < 0.08)){
 
-      printf("Stop_timer = %f\n",( curr_time_seconds- prev_time));
-      if( (curr_time_seconds - prev_time) > 2){
-
-        if(idx <3){
-          idx++;
-          printf("new waypoints : goalx %f, goaly %f, and goalz %f \n", goals[idx][0],goals[idx][1], goals[idx][2] );
-        }
-        else{
-          vTaskDelete(NULL);
-        }
+      if(idx <3){
+        idx++;
+        vTaskDelay(2000 / portTICK_PERIOD_MS);
+        printf("new waypoints : goalx %f, goaly %f, and goalz %f \n", goals[idx][0],goals[idx][1], goals[idx][2] );
       }
+      else{
+        vTaskDelete(NULL);
+      }
+    
     }
 
     else{
