@@ -6,7 +6,9 @@
     ],
     "files.associations": {
         "string": "c",
-        "iostream": "c"
+        "iostream": "c",
+        "cmath": "c",
+        "complex": "c"
     },
     "python.analysis.extraPaths": [
         "/home/proto/catkin_ws/devel/lib/python3/dist-packages",

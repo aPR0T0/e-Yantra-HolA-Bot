@@ -58,8 +58,10 @@ def callback(data):
                 ids = ids.flatten()
                 if (4 in ids):
 
-                    x = corners[numpy.where(ids == 4)[0][0]][0][0][0]
-                    y = corners[numpy.where(ids == 4)[0][0]][0][0][1]
+                    x = (corners[numpy.where(ids == 4)[0][0]][0][0][0] + corners[numpy.where(ids == 4)[0][0]][0][1][0] +
+                         corners[numpy.where(ids == 4)[0][0]][0][2][0] + corners[numpy.where(ids == 4)[0][0]][0][3][0])/4
+                    y = (corners[numpy.where(ids == 4)[0][0]][0][0][1] + corners[numpy.where(ids == 4)[0][0]][0][1][1] +
+                         corners[numpy.where(ids == 4)[0][0]][0][2][1] + corners[numpy.where(ids == 4)[0][0]][0][3][1])/4
                     (topLeft_4, topRight_4, bottomRight_4, bottomLeft_4) = corners[numpy.where(ids == 4)[0][0]][0][0], corners[numpy.where(
                         ids == 4)[0][0]][0][1], corners[numpy.where(ids == 4)[0][0]][0][2], corners[numpy.where(ids == 4)[0][0]][0][3]
                     topRight_4 = (int(topRight_4[0]), int(topRight_4[1]))
@@ -75,7 +77,7 @@ def callback(data):
                             y), "kd": float(orientation)}
                         print(json.dumps(pload))
                         r = requests.post(
-                            'http://192.168.19.49/api/v1/pid', json.dumps(pload))
+                            'http://192.168.0.222/api/v1/pid', json.dumps(pload))
                         r_dictionary = r
                         print(r_dictionary)
                     except:
