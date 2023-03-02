@@ -28,7 +28,7 @@ float current_x, current_y, current_theta;
 const float angular_velocity = 0.5; // rad/sec -> vel_x, vel_y = s/R
 const float radius = 0.8; // Increase this only when u need a larger radius
 
-#define highest_delay  20000
+#define highest_delay  100000
 #define lowest_delay  500
 
 #define highest_speed  0.67
@@ -63,6 +63,8 @@ double goals[4][3] = {  {   350,   300 ,  M_PI/4  },
                         {   150,   150 , -3*M_PI/4},
                         {   350,   150 ,  -M_PI/4 }  };
 
+double goal_x = 250, goal_y = 250 , goal_theta = 0 ; 
+
 #define TAG "MCPWM_SERVO_CONTROL"
 
 servo_config servo_a = {
@@ -88,48 +90,48 @@ servo_config servo_b = {
 
 ///////////////////////////////////////////////////////////////////////
 /*
-  Function   :    Timer
-  Arguments  ;    none
-  Returns    :    current time
+ * Function   :    Timer
+ * Arguments  ;    none
+ * Returns    :    current time
 */
 int64_t timer(){
 
   // Time function initialization
-  if(count == 0){
-    before = esp_timer_get_time();
-    prev_time = before / 1e6;
-    count++;
-  }
-  int64_t difference = esp_timer_get_time() - before;
-  return difference;
+    if(count == 0){
+        before = esp_timer_get_time();
+        prev_time = before / 1e6;
+        count++;
+    }
+    int64_t difference = esp_timer_get_time() - before;
+    return difference;
 
 }
 
 ///////////////////////////////////////////////////////////////////////
 /*
-  Function   :    differential timer
-  Arguments  ;    none
-  Returns    :    dTime
+ * Function   :    differential timer
+ * Arguments  ;    none
+ * Returns    :    dTime
 */
 int64_t d_timer(int64_t prev_time ){
-  int64_t difference = esp_timer_get_time() - prev_time;
-  return difference;
+    int64_t difference = esp_timer_get_time() - prev_time;
+    return difference;
 }
 ////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////
 /*
-  Function   :    modulus
-  Arguments  ;    double -> number
-  Working    :    Gets the modulus of the given number
-  Returns    :    a number -> double
+ * Function   :    modulus
+ * Arguments  ;    double -> number
+ * Working    :    Gets the modulus of the given number
+ * Returns    :    a number -> double
 */
 double modulus(double z){
 
-  if(z<0){
-    z = -z;
-  }
-  return z;
+    if(z<0){
+        z = -z;
+    }
+    return z;
 
 }
 ///////////////////////////////////////////////////////////////////////
@@ -161,10 +163,10 @@ double determinantOfMatrix(double mat[3][3])
 // linear equations using cramer's rule
 
 /*
-  Function    :   findSolution()
-  Arguments   :   a 3x4 matrix with all the elements in it
-  type        :   double[][]
-  Returns     :   a an array which represents a 3x1 matrix and all the elements in order
+ * Function    :   findSolution()
+ * Arguments   :   a 3x4 matrix with all the elements in it
+ * type        :   double[][]
+ * Returns     :   a an array which represents a 3x1 matrix and all the elements in order
 */
 double* findSolution(double coeff[3][4])
 {
@@ -223,16 +225,16 @@ double* findSolution(double coeff[3][4])
 }
 
 /*
-  Function    :   matmul()
-  @param      :   a 3x3 matrix with all the elements in it and a 3x1 matrix
-  type        :   double[][]
-  Returns     :   resultant array with multiplied matrices
+ * Function    :   matmul()
+ * @param      :   a 3x3 matrix with all the elements in it and a 3x1 matrix
+ * type        :   double[][]
+ * Returns     :   resultant array with multiplied matrices
 */
 double* matmul(double MatA[3][3], double MatB[3]){
 	double *ans = malloc(3*sizeof(double));
 
 	for(int i = 0 ; i < 3 ; i++){
-      ans[i] = 0;
+        ans[i] = 0;
 		for(int j = 0 ; j < 3 ; j++){
 			ans[i] += MatA[i][j] * MatB[j];
 		}
@@ -308,37 +310,37 @@ void  speed_publisher(double x1, double x2, double x3, double vel_1, double vel_
   // Print statements for debugging
   // printf("x1 : %f x2 : %f and x3 : %f \n",x1, x2, x3);
   // printf("x1 : %lld x2 : %lld and x3 : %lld\n", (motor_one_curr_time- motor_one_prev_time), (motor_two_curr_time - motor_three_prev_time), (motor_three_curr_time - motor_three_prev_time));
-  
-  if((m1_timer_curr - m1_timer_prev) >= x1 && x1 < highest_delay){
-    m1_count++;
-    if(m1_count == 1){
-      gpio_set_level(step_pin_m1,0);
+    
+    if((m1_timer_curr - m1_timer_prev) >= x1 && x1 < highest_delay){
+        m1_count++;
+        if(m1_count == 1){
+        gpio_set_level(step_pin_m1,0);
+        }
+        if(m1_count == 2){
+        gpio_set_level(step_pin_m1,1);
+        m1_count = 0;
+        }
     }
-    if(m1_count == 2){
-      gpio_set_level(step_pin_m1,1);
-      m1_count = 0;
+    if((m2_timer_curr - m2_timer_prev) >= x2 && x2 < highest_delay){
+        m2_count++;
+        if(m2_count == 1){
+        gpio_set_level(step_pin_m2,0);
+        }
+        if(m2_count == 2){
+        gpio_set_level(step_pin_m2,1);
+        m2_count = 0;
+        }
     }
-  }
-  if((m2_timer_curr - m2_timer_prev) >= x2 && x2 < highest_delay){
-    m2_count++;
-    if(m2_count == 1){
-      gpio_set_level(step_pin_m2,0);
+    if((m3_timer_curr - m3_timer_prev) >= x3 && x3 < highest_delay){
+        m3_count++;
+        if(m3_count == 1){
+        gpio_set_level(step_pin_m3,0);
+        }
+        if(m3_count == 2){
+        gpio_set_level(step_pin_m3,1);
+        m3_count = 0;
+        }
     }
-    if(m2_count == 2){
-      gpio_set_level(step_pin_m2,1);
-      m2_count = 0;
-    }
-  }
-  if((m3_timer_curr - m3_timer_prev) >= x3 && x3 < highest_delay){
-    m3_count++;
-    if(m3_count == 1){
-      gpio_set_level(step_pin_m3,0);
-    }
-    if(m3_count == 2){
-      gpio_set_level(step_pin_m3,1);
-      m3_count = 0;
-    }
-  }
 }
 
 // ######################################################################################################################### //
@@ -383,22 +385,21 @@ void stepper_task(void *arg){
 
 	// Rotation matrix definition just for the next gen code
 
-  current_x     = read_pid_const().ki;
-  current_y     = read_pid_const().kd;
-  current_theta = read_pid_const().kp;         // This is the current orientation of the bot
+    current_x     = read_pid_const().ki;
+    current_y     = read_pid_const().kd;
+    current_theta = read_pid_const().kp;         // This is the current orientation of the bot
 
-  double theta;                               // The Theta is for circular trajectory
-  double  curr_time, curr_time_seconds;
+    double  curr_time, curr_time_seconds;
 
-  m1_timer_prev = timer();
-  m2_timer_prev = timer();
-  m3_timer_prev = timer();
+    m1_timer_prev = timer();
+    m2_timer_prev = timer();
+    m3_timer_prev = timer();
 
-  err_x     = goals[0][0] - current_x;
-  err_y     = goals[0][1] - current_y;
-  err_theta = current_theta;
+    err_x     = goals[0][0] - current_x;
+    err_y     = goals[0][1] - current_y;
+    err_theta = current_theta;
 
-  bool stop = false;
+    bool stop = false;
 
 	while(1){
 
@@ -420,7 +421,7 @@ void stepper_task(void *arg){
 
     err_x     =   goal_x - current_x   ;    
     err_y     = -(goal_y - current_y)  ;  // Our y is flipped
-    err_theta =            0           ;  // Making it go with same orientation only
+    err_theta =     current_theta      ;  // Making it go with same orientation only
 
     double errors[3]  =  {err_x,err_y,err_theta};
 
@@ -428,23 +429,24 @@ void stepper_task(void *arg){
     vel = matmul(rotation_matrix, errors);
 
     if(((err_x < 10 && err_x > -10) && (err_y < 10 && err_y > -10)) || stop){
-      err_theta = current_theta - goal_theta;
-      stop = true;
-      if((err_theta > -0.12 && err_theta < 0.12)){
-        if(idx < 4){
-          idx++;
-          vTaskDelay(5000 / portTICK_PERIOD_MS);
-          printf("+----------------------------------+\n");
-          printf("new waypoints : goalx %f, goaly %f, and goalz %f \n", goals[idx][0],goals[idx][1], goals[idx][2] );
-          printf("+----------------------------------+\n");
-          stop = false;
+        err_theta = -(goal_theta - current_theta);
+        err_x = 0, err_y = 0;
+        stop = true;
+        if((err_theta > -0.12 && err_theta < 0.12)){
+            if(idx < 4){
+            idx++;
+            vTaskDelay(5000 / portTICK_PERIOD_MS);
+            printf("+----------------------------------+\n");
+            printf("new waypoints : goalx %f, goaly %f, and goalz %f \n", goals[idx][0],goals[idx][1], goals[idx][2] );
+            printf("+----------------------------------+\n");
+            stop = false;
+            }
+            else{
+            stop = false;
+            speed_publisher(x1, x2, x3, 0, 0, 0);  // Stopping all the motors when reached the final goal
+            vTaskDelete(NULL);
+            }
         }
-        else{
-          stop = false;
-          speed_publisher(x1, x2, x3, 0, 0, 0);  // Stopping all the motors when reached the final goal
-          vTaskDelete(NULL);
-        }
-      }
     }
     else{
       prev_time = curr_time_seconds; // This was the mistake
@@ -458,7 +460,7 @@ void stepper_task(void *arg){
     // printf("error[0] : %f, error[1] : %f, error[2] : %f\n", errors[0], errors[1], errors[2]);
     // printf("error[2] : %f\n", errors[2]);
     // printf("vel[0]  : %f, vel[1] : %f\n", vel[0], vel[1]);
-    // printf(" vel_x : %f vel_y : %f  \n", vel_x, vel_y);
+    printf(" vel_x : %f vel_y : %f  \n", vel_x, vel_y);
 
     // Freeing the heap allotment
     free(vel);
@@ -480,14 +482,14 @@ void stepper_task(void *arg){
 
     // Now we need to publish all the velocties for the individual wheel with the help of the parameters
     speed_publisher( x1, x2, x3, vel_1, vel_2, vel_3);
-  }
+    }
 }
 
 void app_main()
 {
 	// xTaskCreate -> Create a new task and add it to the list of tasks that are ready to run
 	xTaskCreatePinnedToCore(&stepper_task, "stepper task", 8192, NULL, 1, NULL, taskCore); // Running the task on CORE0 only of the esp32
-  start_tuning_http_server();
+    start_tuning_http_server();
 
 }
 
